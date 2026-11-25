@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>برنامج المراجعة — الجهات غير الربحية</title>
+<style>
+:root{
+  --green:#0b5d45; --green2:#0f7457; --sand:#f5f3ee; --card:#ffffff; --ink:#1d2b26;
+  --muted:#6b7a74; --line:#e3ded4; --danger:#b3261e; --chip:#eae7df;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--sand);color:var(--ink);font-size:15px}
+.top{background:var(--green);color:#fff;padding:14px 16px 12px}
+.top h1{margin:0;font-size:19px;font-weight:600}
+.top .sub{font-size:12.5px;opacity:.85;font-weight:400;margin-right:8px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.btn{font-family:inherit;font-size:13.5px;border:1px solid rgba(255,255,255,.45);background:transparent;color:#fff;
+  border-radius:8px;padding:7px 12px;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,.12)}
+.btn.primary{background:#fff;color:var(--green);border-color:#fff;font-weight:600}
+.btn.primary:hover{background:#eef6f2}
+.btn.armed{background:var(--danger);border-color:var(--danger)}
+select#clientSel{font-family:inherit;font-size:13.5px;padding:7px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.45);
+  background:#0a503c;color:#fff;max-width:46vw}
+.save{font-size:12px;opacity:.85;margin-inline-start:auto}
+#progressWrap{display:flex;align-items:center;gap:10px;padding:10px 16px 0}
+#progressTrack{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+#progressBar{height:100%;width:0;background:var(--green2);border-radius:99px;transition:width .3s}
+#progressTxt{font-size:12.5px;color:var(--muted);white-space:nowrap}
+nav#chips{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 4px;-webkit-overflow-scrolling:touch}
+.chip{flex:0 0 auto;font-size:13px;background:var(--chip);border:1px solid var(--line);color:var(--ink);
+  border-radius:99px;padding:7px 14px;cursor:pointer;font-family:inherit}
+.chip.on{background:var(--green);color:#fff;border-color:var(--green);font-weight:600}
+.chip .pct{opacity:.75;font-size:11px;margin-inline-start:4px}
+main{padding:12px 16px 40px;max-width:1050px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 4px;font-size:16.5px;color:var(--green)}
+.card .hint{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+table{width:100%;border-collapse:collapse}
+th{background:#f0ede6;font-weight:600;font-size:12.5px;color:#41504a;padding:8px;border:1px solid var(--line);text-align:right}
+td{border:1px solid var(--line);padding:6px 8px;font-size:13.5px;vertical-align:top}
+td.num,th.num{text-align:center;white-space:nowrap}
+input[type=text],input[type=date],input[type=number],textarea,select.inp{
+  font-family:inherit;font-size:13.5px;width:100%;border:1px solid #d8d3c6;border-radius:7px;padding:6px 8px;background:#fff}
+input:focus,textarea:focus,select.inp:focus{outline:2px solid #0f745755;border-color:var(--green2)}
+textarea{min-height:60px;resize:vertical}
+.proc-done td{background:#f1f7f4}
+.chk{width:19px;height:19px;accent-color:var(--green2);cursor:pointer}
+.done-cell{text-align:center}
+.tblwrap{overflow-x:auto}
+.pct-cell input{width:64px;text-align:center}
+.bal-cell input{min-width:110px;text-align:left}
+.computed{font-weight:600;white-space:nowrap;direction:ltr;text-align:left}
+.totalrow td{background:#f0ede6;font-weight:700}
+.matgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.matgrid{grid-template-columns:1fr}}
+.matout{background:#f1f7f4;border:1px solid #cfe4da;border-radius:10px;padding:12px}
+.matout .big{font-size:19px;font-weight:700;color:var(--green);direction:ltr;text-align:right}
+.matout .lbl{font-size:12.5px;color:var(--muted);margin-bottom:2px}
+.matout > div{margin-bottom:10px}
+.addrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.addrow input[type=text]{flex:2;min-width:180px}
+.addrow .btn2{font-family:inherit;font-size:13px;background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 14px;cursor:pointer}
+.delcustom{background:none;border:none;color:var(--danger);cursor:pointer;font-size:15px;padding:2px 6px}
+.note12{font-size:12px;color:var(--muted)}
+footer{padding:14px 16px;font-size:12px;color:var(--muted);text-align:center;border-top:1px solid var(--line)}
+.infoTable td:first-child{width:38%;font-weight:600;background:#faf9f5}
+@media(max-width:640px){
+  .proctable thead,.studytable thead{display:none}
+  .proctable tr,.studytable tr{display:block;border:1px solid var(--line);border-radius:10px;margin:0 0 10px;padding:10px;background:#fff;position:relative}
+  .proctable td,.studytable td{display:block;border:none;padding:3px 0;min-width:0!important}
+  .proctable td[data-label]::before,.studytable td[data-label]::before{content:attr(data-label);display:block;font-size:11px;color:var(--muted)}
+  .proctable td.c-m{display:inline-block;width:auto;font-weight:700;color:var(--green)}
+  .proctable td.c-m::after{content:' — '}
+  .proctable td.c-text{display:inline;font-weight:600}
+  .proctable td.c-assert{color:var(--muted);font-size:12.5px}
+  .proctable td.c-done{display:block;padding:6px 0 4px;border-top:1px dashed var(--line)}
+  .proctable td.c-done::before{content:'أنجز الإجراء';display:inline-block;font-size:12px;color:var(--muted);margin-inline-end:6px}
+  .proctable td.c-ref,.proctable td.c-by,.proctable td.c-date{display:inline-block;width:32.5%;vertical-align:top;padding-inline-end:6px}
+  .proctable td.c-del{position:absolute;top:6px;left:6px;width:auto}
+  .studytable td.c-name{font-weight:600;padding-bottom:6px}
+  .studytable td.c-bal,.studytable td.c-pct{display:inline-block;width:49%;vertical-align:top}
+  .studytable td.c-min{display:block;font-weight:700;color:var(--green);font-size:15px}
+  .studytable tr.totalrow{display:block}
+  .pct-cell input{width:56px}
+  .bal-cell input{min-width:0}
+}
+.secBadge{display:inline-block;background:#e8f2ee;color:var(--green);border-radius:99px;font-size:12px;padding:2px 10px;margin-inline-start:8px}
+.emptyState{padding:40px 16px;text-align:center;color:var(--muted)}
+@media print{ nav#chips,.bar,#progressWrap,footer{display:none} .top{background:#fff;color:#000} }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>برنامج المراجعة <span class="sub">للجمعيات والجهات غير الربحية</span></h1>
+  <div class="bar">
+    <select id="clientSel" title="العميل الحالي"></select>
+    <button id="newClient" class="btn">+ عميل جديد</button>
+    <button id="delClient" class="btn">حذف العميل</button>
+  </div>
+  <div class="bar">
+    <button id="exportXls" class="btn primary">تصدير إلى Excel</button>
+    <button id="backupBtn" class="btn">نسخة احتياطية</button>
+    <button id="restoreBtn" class="btn">استعادة نسخة</button>
+    <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+    <span id="saveState" class="save"></span>
+  </div>
+</header>
+<div id="progressWrap">
+  <div id="progressTrack"><div id="progressBar"></div></div>
+  <span id="progressTxt"></span>
+</div>
+<nav id="chips"></nav>
+<main id="panel"></main>
+<footer>يعمل بالكامل على جهازك بدون إنترنت — بيانات العملاء محفوظة في متصفحك فقط ولا تُرسل لأي جهة.<br>استخدم "نسخة احتياطية" لنقل عملك بين الأجهزة أو للحفاظ عليه.</footer>
+<script>
+'use strict';
+const DATA = {"sections": [{"short": "الأهمية النسبية", "title": "الأهمية النسبية", "procs": [["تحديد الأساس المناسب للمنشأة غير الربحية (إجمالي الإيرادات/التبرعات أو إجمالي المصروفات) وتوثيق سبب اختياره", "التخطيط"], ["احتساب الأهمية النسبية الكلية للقوائم المالية بنسبة مناسبة من الأساس المختار", "التخطيط"], ["تحديد أهمية الأداء (نسبة من الأهمية الكلية) وحد الأخطاء الواضحة التافهة", "التخطيط"], ["تحديد أهمية خاصة للبنود الحساسة (المعاملات مع الأطراف ذات العلاقة، التبرعات المقيدة، مكافآت الإدارة)", "التخطيط"], ["مراجعة الأهمية النسبية وتحديثها عند ظهور معلومات جديدة أثناء العمل الميداني وفي نهايته", "التخطيط/الإكمال"], ["اعتماد الأهمية النسبية من المدير والشريك", "الاعتماد"]]}, {"short": "النقد", "title": "النقد وما في حكمه", "procs": [["مطابقة الرصيد الدفتري مع كشوف الحسابات البنكية في تاريخ القوائم لجميع الحسابات", "الوجود/الاكتمال"], ["الحصول على مصادقات بنكية مباشرة (أرصدة، ضمانات، قيود على السحب) ومطابقتها مع الدفاتر", "الوجود/الحقوق"], ["مراجعة مذكرات التسوية البنكية وفحص البنود المعلقة (شيكات معلقة، إيداعات في الطريق) والتحقق من لاحق تسويتها", "الدقة"], ["جرد الصندوق والعهد النقدية بحضور ممثل الإدارة ومطابقته مع الدفاتر", "الوجود"], ["اختبار القطع للمقبوضات والمدفوعات قبل وبعد نهاية السنة بفترة مناسبة", "القطع"], ["التحقق من فصل النقد المقيد (تبرعات مقيدة) عن غير المقيد وإفصاحه بشكل سليم", "العرض والإفصاح"], ["فحص التحويلات بين الحسابات البنكية قرب نهاية السنة", "القطع/الاكتمال"], ["مراجعة صلاحيات التوقيع وفصل المهام في الاعتماد والصرف", "الرقابة الداخلية"]]}, {"short": "الذمم المدينة", "title": "الذمم المدينة والأصول المتداولة الأخرى", "procs": [["الحصول على كشف تحليلي بالذمم وسلفها (تعهدات، مدفوعات مقدمة، ودائع، عهد) ومطابقته مع الأستاذ العام", "الوجود/الدقة"], ["إرسال مصادقات للأرصدة الجوهرية، أو تنفيذ إجراءات بديلة (تحصيلات لاحقة، مستندات)", "الوجود"], ["مراجعة أعمار الذمم وتقييم الحاجة لمخصص ديون مشكوك في تحصيلها", "التقييم"], ["اختبار التعهدات والتبرعات المستحقة: وجود وعد ملزم/عقد وإمكانية التحصيل قبل الاعتراف بها", "الوجود/التقييم"], ["اختبار المصروفات المدفوعة مقدمًا وتوزيعها على الفترات", "الدقة/القطع"], ["فحص السلف والعهد على الموظفين ومدى تسويتها", "الوجود/التقييم"], ["تحديد الأرصدة مع أطراف ذات علاقة والتحقق من إفصاحها", "العرض والإفصاح"]]}, {"short": "أعمال تحت التنفيذ", "title": "الأعمال تحت التنفيذ", "procs": [["الحصول على كشف بالمشاريع تحت التنفيذ ومطابقته مع الأستاذ العام", "الاكتمال/الدقة"], ["اختبار عينة من التكاليف المرسملة بمستندات داعمة (فواتير، عقود، مستخلصات)", "الوجود/التقييم"], ["التحقق من نسب الإنجاز عبر تقارير المهندسين والمعاينة الميدانية للمشاريع الجوهرية", "التقييم"], ["التأكد من تحويل المشاريع المنتهية إلى الأصول الثابتة وبدء الإهلاك في التاريخ الصحيح", "التصنيف"], ["مراجعة المشاريع المتوقفة لتحديد الحاجة لانخفاض في القيمة", "التقييم"], ["اختبار القطع على التكاليف والالتزامات المتعلقة بالمشاريع", "القطع"]]}, {"short": "الأصول الثابتة", "title": "الأصول الثابتة والأصول غير الملموسة", "procs": [["مطابقة سجل الأصول مع الأستاذ العام وحركة السنة (إضافات، استبعادات، إهلاك)", "الدقة/الاكتمال"], ["فحص عينة من الإضافات بالفواتير وأوامر الشراء والتأكد من أنها رأسمالية", "الوجود/التقييم"], ["اختبار الاستبعادات والأرباح والخسائر الناتجة ومراجعة الاعتمادات", "الاكتمال/الدقة"], ["إعادة احتساب الإهلاك والإطفاء والتحقق من معقولية الأعمار الإنتاجية والطريقة المتبعة", "التقييم"], ["المعاينة الفعلية لعينة من الأصول والتحقق من وجودها وحالتها", "الوجود"], ["التحقق من ملكية الأصول (صكوك، استمارات، عقود) وأن ما كان مهدى للمنشأة مسجل بقيمة عادلة", "الحقوق"], ["تقييم مؤشرات انخفاض القيمة، ومراجعة الأصول غير الملموسة والاعتراف بها", "التقييم"], ["التحقق من سياسة تسجيل الأصول المهداة والمتبرع بها والإفصاح عنها", "العرض والإفصاح"]]}, {"short": "الدائنون", "title": "الدائنون والالتزامات المتداولة", "procs": [["الحصول على كشف تحليلي بالدائنين والمستحقات ومطابقته مع الأستاذ العام", "الاكتمال/الدقة"], ["مصادقات للموردين الجوهريين ومطابقة كشوف الحساب", "الاكتمال/الوجود"], ["البحث عن التزامات غير مسجلة: مراجعة المدفوعات اللاحقة والفواتير بعد تاريخ القوائم", "الاكتمال"], ["اختبار المصروفات المستحقة (رواتب، إجازات، إيجارات، خدمات) بإعادة الاحتساب", "الدقة/الاكتمال"], ["فحص التبرعات المقبوضة مقدمًا والإيرادات المؤجلة وشروط الاعتراف بها", "التصنيف/القطع"], ["مراجعة التزامات الجهات الحكومية (الزكاة/الضريبة، التأمينات الاجتماعية) والتحقق من سدادها", "الاكتمال"], ["تحديد الأرصدة مع أطراف ذات علاقة والإفصاح عنها", "العرض والإفصاح"]]}, {"short": "نهاية الخدمة", "title": "مخصص نهاية الخدمة والالتزامات غير المتداولة", "procs": [["الحصول على كشف احتساب مكافأة نهاية الخدمة لكل موظف ومطابقته مع قوائم الرواتب وبيانات الموظفين", "الدقة/الاكتمال"], ["إعادة احتساب المخصص وفق نظام العمل السعودي (مدة الخدمة، آخر أجر، الاستقالة/إنهاء العقد)", "التقييم"], ["مطابقة حركة المخصص (رصيد أول، مكوّن، مدفوع، رصيد ختامي) وتتبع المدفوعات للمستندات", "الدقة"], ["التحقق من تصنيف الجزء المتداول وغير المتداول للقروض والالتزامات", "التصنيف"], ["فحص عقود القروض والتمويل والالتزامات طويلة الأجل وشروطها والتزام المنشأة بها", "الوجود/الإفصاح"], ["التحقق من احتساب أي تكاليف تمويل أو التزامات إيجار وإفصاحها", "الدقة/العرض"]]}, {"short": "التبرعات", "title": "التبرعات المقيدة وغير المقيدة", "procs": [["الحصول على كشف بالتبرعات ومطابقته مع الأستاذ العام وسندات القبض والتحويلات البنكية", "الاكتمال/الدقة"], ["اختبار عينة من التبرعات النقدية والعينية بمستندات داعمة (إيصالات، منصات التبرع، تحويلات)", "الوجود/الحدوث"], ["التحقق من تصنيف التبرعات بين مقيدة وغير مقيدة وفق شروط المتبرع وتوثيقها", "التصنيف"], ["مراجعة إطلاق التبرعات المقيدة (تحرير القيود) عند الصرف على الغرض المحدد واحتساب الرصيد المتبقي", "الدقة/التصنيف"], ["التحقق من أن الصرف تم على الغرض المحدد من المتبرع ومطابقته مع شروط الاتفاقيات", "الالتزام"], ["اختبار التبرعات العينية والأصول الموقوفة وقياسها بالقيمة العادلة", "التقييم"], ["اختبار القطع للتبرعات قرب نهاية السنة والتبرعات المستلمة مقدمًا", "القطع"], ["مراجعة الالتزام بتعليمات الجهة المشرفة (الوزارة/المركز الوطني لتنمية القطاع غير الربحي) وأنظمة جمع التبرعات", "الالتزام"], ["التحقق من سلامة أرصدة الصناديق وصافي الأصول بحسب النوع والإفصاح عنها", "العرض والإفصاح"]]}, {"short": "المصروفات", "title": "المصروفات العمومية والإدارية ومصروفات البرامج والأنشطة", "procs": [["مقارنة المصروفات مع العام السابق والموازنة وتحليل الفروقات الجوهرية", "إجراءات تحليلية"], ["اختبار عينة من المصروفات بالمستندات والاعتماد والتأكد من أنها تخص السنة", "الحدوث/القطع"], ["مراجعة توزيع المصروفات المشتركة بين البرامج والأنشطة والإدارة والتمويل وفق أسس معقولة وثابتة", "التصنيف"], ["إعادة احتساب الرواتب والبدلات ومطابقتها مع قوائم الرواتب والتأمينات الاجتماعية", "الدقة"], ["اختبار مصروفات البرامج والأنشطة والتأكد من ارتباطها بالمستفيدين والمشاريع المعتمدة", "الحدوث/التصنيف"], ["فحص المساعدات والمنح المقدمة للمستفيدين (كشوف المستفيدين، شروط الأهلية، الاستلام)", "الحدوث/الالتزام"], ["فحص المعاملات مع الأطراف ذات العلاقة ومكافآت الإدارة والإفصاح عنها", "العرض والإفصاح"], ["البحث عن مصروفات غير مسجلة أو مسجلة في غير فترتها", "الاكتمال/القطع"]]}, {"short": "ضريبة القيمة المضافة", "title": "ضريبة القيمة المضافة", "procs": [["مطابقة الإقرارات الضريبية مع الأستاذ العام والفواتير", "الدقة/الاكتمال"], ["التحقق من تسجيل المنشأة وتحديد التوريدات الخاضعة والمعفاة وغير الخاضعة (حسب طبيعة نشاط المنشأة غير الربحية)", "الالتزام"], ["اختبار عينة من فواتير المشتريات والمبيعات والتأكد من سلامة الاحتساب ونسبة الضريبة", "الدقة"], ["مراجعة ضريبة المدخلات القابلة للخصم واستبعاد غير القابلة وتحديد الجزء المسترد", "الدقة/الالتزام"], ["مطابقة رصيد الضريبة المستحقة/المستردة مع الإقرارات والسداد وكشف حساب الهيئة", "الاكتمال/الوجود"], ["مراجعة الغرامات والتأخير والتحقق من الالتزام بمواعيد التقديم والسداد", "الالتزام"], ["التحقق من الإفصاح في القوائم عن أي التزامات أو مخاطر ضريبية محتملة", "العرض والإفصاح"]]}], "infoFields": ["اسم العميل", "الرقم الوطني الموحد / السجل", "الرقم الضريبي", "نوع النشاط / الكيان", "السنة المالية", "تاريخ نهاية السنة المالية", "الجهة المشرفة", "الإدارة / ممثل العميل", "جهة الاتصال", "نوع التقرير المطلوب", "المعد", "المراجع", "تاريخ الإعداد", "تاريخ المراجعة"], "study": [["النقد وما في حكمه", 100], ["الذمم المدينة والأصول المتداولة الأخرى", 70], ["أعمال تحت التنفيذ", 60], ["الأصول الثابتة", 80], ["الموجودات غير الملموسة", 80], ["الذمم الدائنة والالتزامات المتداولة", 70], ["مخصص نهاية الخدمة والالتزامات غير المتداولة", 100], ["الإيرادات والتبرعات", 60], ["المصروفات", 40]]};
+const LS_KEY = 'auditProgram.v1';
+
+/* ---------- state ---------- */
+let state = null;
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function blankClient(name){
+  return { id: uid(), name: name||'عميل جديد', info:{}, studyBal:{}, studyPct:{},
+    mat:{basis:'revenue', amount:'', pct:'1', perf:'75', trivial:'5', notes:''},
+    prog:{}, custom:{} };
+}
+function load(){
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw){ state = JSON.parse(raw); } }catch(e){}
+  if(!state || !state.clients || !state.clients.length){
+    const c = blankClient();
+    state = { current: c.id, clients: [c] };
+    save();
+  }
+  if(!cur()) state.current = state.clients[0].id;
+}
+function save(){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+  const d = new Date();
+  document.getElementById('saveState').textContent = 'محفوظ ✓ ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function cur(){ return state.clients.find(c=>c.id===state.current); }
+function prog(sec,row){
+  const c=cur(); if(!c.prog[sec]) c.prog[sec]={};
+  if(!c.prog[sec][row]) c.prog[sec][row]={done:false,ref:'',by:'',date:'',notes:''};
+  return c.prog[sec][row];
+}
+
+/* ---------- helpers ---------- */
+const $ = s=>document.querySelector(s);
+function fmt(n){
+  if(n==null||isNaN(n)) return '';
+  return Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+}
+function num(v){ const n=parseFloat(String(v).replace(/,/g,'')); return isNaN(n)?null:n; }
+function escH(s){ const d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
+function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstChild; }
+let activeTab = 'info';
+let saveTimer=null;
+function saveSoon(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{save(); renderChips(); renderProgress();},250); }
+
+/* ---------- progress ---------- */
+function secStats(i){
+  const c=cur(); const std=DATA.sections[i].procs.length;
+  const cust=(c.custom[i]||[]).length;
+  let done=0;
+  for(let r=0;r<std;r++){ if(c.prog[i]&&c.prog[i][r]&&c.prog[i][r].done) done++; }
+  (c.custom[i]||[]).forEach(p=>{ if(p.done) done++; });
+  return {done, total: std+cust};
+}
+function overallStats(){
+  let d=0,t=0;
+  DATA.sections.forEach((_,i)=>{ const s=secStats(i); d+=s.done; t+=s.total; });
+  return {done:d,total:t};
+}
+function renderProgress(){
+  const o=overallStats();
+  $('#progressBar').style.width = o.total? (o.done/o.total*100)+'%' : '0';
+  $('#progressTxt').textContent = 'إنجاز البرنامج: ' + o.done + ' / ' + o.total;
+}
+
+/* ---------- chips ---------- */
+function renderChips(){
+  const nav=$('#chips'); nav.innerHTML='';
+  const mk=(id,label,extra)=>{
+    const b=el('<button class="chip'+(activeTab===id?' on':'')+'">'+escH(label)+(extra||'')+'</button>');
+    b.onclick=()=>{ activeTab=id; renderChips(); renderPanel(); };
+    nav.appendChild(b);
+  };
+  mk('info','بيانات العميل');
+  mk('study','بيانات الدراسة');
+  DATA.sections.forEach((s,i)=>{
+    const st=secStats(i);
+    mk('sec'+i, s.short, '<span class="pct">'+st.done+'/'+st.total+'</span>');
+  });
+}
+
+/* ---------- client bar ---------- */
+function renderClients(){
+  const sel=$('#clientSel'); sel.innerHTML='';
+  state.clients.forEach(c=>{
+    const label=(c.info && c.info['اسم العميل']) || c.name;
+    const o=el('<option>'+escH(label)+'</option>'); o.value=c.id;
+    if(c.id===state.current) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+$('#clientSel').addEventListener('change',e=>{ state.current=e.target.value; save(); renderAll(); });
+$('#newClient').addEventListener('click',()=>{
+  const c=blankClient('عميل جديد '+(state.clients.length+1));
+  state.clients.push(c); state.current=c.id; save();
+  activeTab='info'; renderAll();
+});
+let delArmed=false;
+$('#delClient').addEventListener('click',function(){
+  if(!delArmed){ delArmed=true; this.textContent='تأكيد الحذف؟'; this.classList.add('armed');
+    setTimeout(()=>{delArmed=false; this.textContent='حذف العميل'; this.classList.remove('armed');},3000); return; }
+  delArmed=false; this.textContent='حذف العميل'; this.classList.remove('armed');
+  state.clients=state.clients.filter(c=>c.id!==state.current);
+  if(!state.clients.length) state.clients.push(blankClient());
+  state.current=state.clients[0].id; save(); renderAll();
+});
+
+/* ---------- panels ---------- */
+function renderPanel(){
+  const p=$('#panel'); p.innerHTML='';
+  if(activeTab==='info') renderInfo(p);
+  else if(activeTab==='study') renderStudy(p);
+  else{ const i=parseInt(activeTab.slice(3),10); renderSection(p,i); }
+  renderProgress();
+}
+
+function renderInfo(p){
+  const c=cur();
+  const card=el('<div class="card"><h2>بيانات العميل والمعلومات الأساسية</h2><div class="tblwrap"><table class="infoTable"></table></div></div>');
+  const tbl=card.querySelector('table');
+  DATA.infoFields.forEach(f=>{
+    const isDate = f.indexOf('تاريخ')===0;
+    const tr=el('<tr><td>'+escH(f)+'</td><td></td></tr>');
+    const inp=document.createElement('input');
+    inp.type = isDate?'date':'text';
+    inp.value=c.info[f]||'';
+    inp.addEventListener('input',()=>{ c.info[f]=inp.value; if(f==='اسم العميل') renderClients(); saveSoon(); });
+    tr.lastChild.appendChild(inp);
+    tbl.appendChild(tr);
+  });
+  const tr=el('<tr><td>ملاحظات عامة</td><td></td></tr>');
+  const ta=document.createElement('textarea'); ta.value=c.info['ملاحظات عامة']||'';
+  ta.addEventListener('input',()=>{ c.info['ملاحظات عامة']=ta.value; saveSoon(); });
+  tr.lastChild.appendChild(ta); tbl.appendChild(tr);
+  p.appendChild(card);
+}
+
+function renderStudy(p){
+  const c=cur();
+  const card=el('<div class="card"><h2>بيانات الدراسة: الحد الأدنى للدراسة</h2>'+
+    '<div class="hint">أدخل الرصيد حسب الدفاتر لكل قسم، ويحسب لك البرنامج أقل مبلغ يلزم دراسته حسب النسبة الدنيا.</div>'+
+    '<div class="tblwrap"><table class="studytable"><thead><tr><th>القسم</th><th>الرصيد حسب الدفاتر</th><th class="num">نسبة الدراسة الدنيا %</th><th>أقل مبلغ لازم تدرسه</th></tr></thead><tbody></tbody></table></div>'+
+    '<p class="note12">النسب الدنيا أعلاه مقترحة من الممارسة الشائعة وليست إلزامية من معيار المراجعة 530، وتقدر تعدلها حسب المخاطر وسياسة المكتب.</p></div>');
+  const tb=card.querySelector('tbody');
+  let totBal=0, totMin=0, hasAny=false;
+  DATA.study.forEach((row,i)=>{
+    const name=row[0], defPct=row[1];
+    const bal = c.studyBal[i]!==undefined? c.studyBal[i] : '';
+    const pct = c.studyPct[i]!==undefined? c.studyPct[i] : defPct;
+    const bN=num(bal), pN=num(pct);
+    const min = (bN!=null && pN!=null)? bN*pN/100 : null;
+    if(min!=null){ hasAny=true; totBal+=bN; totMin+=min; }
+    const tr=el('<tr><td class="c-name">'+escH(name)+'</td>'+
+      '<td class="bal-cell c-bal" data-label="الرصيد حسب الدفاتر"></td>'+
+      '<td class="num pct-cell c-pct" data-label="نسبة الدراسة الدنيا %"></td>'+
+      '<td class="computed c-min" data-label="أقل مبلغ لازم تدرسه">'+(min!=null?fmt(min):'—')+'</td></tr>');
+    const bi=document.createElement('input'); bi.type='number'; bi.min='0'; bi.step='any'; bi.value=bal;
+    bi.addEventListener('input',()=>{ c.studyBal[i]=bi.value; saveSoon(); renderStudyDeb(); });
+    const pi=document.createElement('input'); pi.type='number'; pi.min='0'; pi.max='100'; pi.step='any'; pi.value=pct;
+    pi.addEventListener('input',()=>{ c.studyPct[i]=pi.value; saveSoon(); renderStudyDeb(); });
+    tr.children[1].appendChild(bi); tr.children[2].appendChild(pi);
+    tb.appendChild(tr);
+  });
+  if(hasAny){
+    tb.appendChild(el('<tr class="totalrow"><td class="c-name">الإجمالي</td><td class="computed c-bal">'+fmt(totBal)+'</td><td class="c-pct"></td><td class="computed c-min" data-label="إجمالي الحد الأدنى">'+fmt(totMin)+'</td></tr>'));
+  }
+  p.appendChild(card);
+}
+let studyDeb=null;
+function renderStudyDeb(){ clearTimeout(studyDeb); studyDeb=setTimeout(()=>{ if(activeTab==='study') renderPanel(); },600); }
+
+function matCompute(m){
+  const a=num(m.amount), pc=num(m.pct), pf=num(m.perf), tr=num(m.trivial);
+  const overall=(a!=null&&pc!=null)? a*pc/100 : null;
+  const perf=(overall!=null&&pf!=null)? overall*pf/100 : null;
+  const triv=(overall!=null&&tr!=null)? overall*tr/100 : null;
+  return {overall,perf,triv};
+}
+function renderMatCard(sec){
+  const c=cur(); const m=c.mat;
+  const basisOpts=[['revenue','إجمالي الإيرادات والتبرعات (نسبة معيارية 0.5% - 1%)'],
+    ['expenses','إجمالي المصروفات (0.5% - 1%)'],
+    ['assets','إجمالي الأصول (0.5% - 1%)'],
+    ['netassets','صافي الأصول (1%)']];
+  const r=matCompute(m);
+  const card=el('<div class="card"><h2>حساب الأهمية النسبية <span class="secBadge">للتخطيط</span></h2>'+
+    '<div class="hint">اختر الأساس المناسب للجهة غير الربحية وأدخل مبلغه والنسبة المطبقة، ويحسب البرنامج الأهمية الكلية وأهمية الأداء وحد الأخطاء التافهة.</div>'+
+    '<div class="matgrid"><div>'+
+    '<p class="note12">أساس الأهمية</p><select class="inp" id="matBasis"></select>'+
+    '<p class="note12">مبلغ الأساس</p><input type="number" id="matAmount" min="0" step="any" value="'+escH(m.amount)+'">'+
+    '<p class="note12">النسبة المطبقة %</p><input type="number" id="matPct" min="0" step="any" value="'+escH(m.pct)+'">'+
+    '<p class="note12">نسبة أهمية الأداء % (من الأهمية الكلية)</p><input type="number" id="matPerf" min="0" max="100" step="any" value="'+escH(m.perf)+'">'+
+    '<p class="note12">نسبة حد الأخطاء التافهة % (من الأهمية الكلية)</p><input type="number" id="matTriv" min="0" max="100" step="any" value="'+escH(m.trivial)+'">'+
+    '</div><div class="matout">'+
+    '<div><div class="lbl">الأهمية النسبية الكلية للقوائم المالية</div><div class="big">'+(r.overall!=null?fmt(r.overall):'—')+'</div></div>'+
+    '<div><div class="lbl">أهمية الأداء</div><div class="big">'+(r.perf!=null?fmt(r.perf):'—')+'</div></div>'+
+    '<div><div class="lbl">حد الأخطاء الواضحة التافهة</div><div class="big">'+(r.triv!=null?fmt(r.triv):'—')+'</div></div>'+
+    '<p class="note12">ملاحظات وأسباب اختيار الأساس</p><textarea id="matNotes">'+escH(m.notes)+'</textarea>'+
+    '</div></div></div>');
+  const sel=card.querySelector('#matBasis');
+  basisOpts.forEach(o=>{ const op=el('<option value="'+o[0]+'">'+escH(o[1])+'</option>'); if(m.basis===o[0]) op.selected=true; sel.appendChild(op); });
+  sel.addEventListener('change',()=>{ m.basis=sel.value; saveSoon(); });
+  const bind=(id,key)=>{ card.querySelector('#'+id).addEventListener('input',e=>{ m[key]=e.target.value; saveSoon();
+    const rr=matCompute(m); const outs=card.querySelectorAll('.matout .big');
+    outs[0].textContent=rr.overall!=null?fmt(rr.overall):'—';
+    outs[1].textContent=rr.perf!=null?fmt(rr.perf):'—';
+    outs[2].textContent=rr.triv!=null?fmt(rr.triv):'—';
+  }); };
+  bind('matAmount','amount'); bind('matPct','pct'); bind('matPerf','perf'); bind('matTriv','trivial');
+  card.querySelector('#matNotes').addEventListener('input',e=>{ m.notes=e.target.value; saveSoon(); });
+  return card;
+}
+
+function renderSection(p,i){
+  const c=cur(); const sec=DATA.sections[i];
+  if(i===0) p.appendChild(renderMatCard(i));
+  const st=secStats(i);
+  const card=el('<div class="card"><h2>'+escH(sec.title)+' <span class="secBadge">'+st.done+' / '+st.total+'</span></h2>'+
+    '<div class="tblwrap"><table class="proctable"><thead><tr>'+
+    '<th class="num">م</th><th>إجراء المراجعة</th><th>الإقرار / الهدف</th><th class="num">تم</th>'+
+    '<th>مرجع ورقة العمل</th><th>المنفذ</th><th>التاريخ</th><th>ملاحظات</th><th class="num"></th>'+
+    '</tr></thead><tbody></tbody></table></div>'+
+    '<div class="addrow"><input type="text" id="newProc" placeholder="إجراء إضافي خاص بالعميل..."><input type="text" id="newProcAssert" placeholder="الإقرار/الهدف" style="flex:1;min-width:120px"><button class="btn2" id="addProcBtn">+ إضافة إجراء</button></div></div>');
+  const tb=card.querySelector('tbody');
+  function mkRow(n, text, assertion, rec, onCh, customIdx){
+    const tr=el('<tr'+(rec.done?' class="proc-done"':'')+'><td class="num c-m">'+n+'</td>'+
+      '<td class="c-text" style="min-width:220px">'+escH(text)+'</td>'+
+      '<td class="c-assert" data-label="الإقرار / الهدف" style="min-width:110px">'+escH(assertion)+'</td>'+
+      '<td class="done-cell c-done"></td>'+
+      '<td class="c-ref" data-label="مرجع ورقة العمل"></td><td class="c-by" data-label="المنفذ"></td><td class="c-date" data-label="التاريخ"></td><td class="c-notes" data-label="ملاحظات" style="min-width:140px"></td>'+
+      '<td class="num c-del">'+(customIdx!=null?'<button class="delcustom" title="حذف الإجراء">×</button>':'')+'</td></tr>');
+    const chk=document.createElement('input'); chk.type='checkbox'; chk.className='chk'; chk.checked=!!rec.done;
+    chk.addEventListener('change',()=>{ rec.done=chk.checked; tr.className=rec.done?'proc-done':''; save(); renderChips(); renderProgress();
+      card.querySelector('.secBadge').textContent=secStats(i).done+' / '+secStats(i).total; });
+    tr.children[3].appendChild(chk);
+    const mkIn=(key,cls,type)=>{ const inp=document.createElement('input'); inp.type=type||'text'; if(cls)inp.className=cls; inp.value=rec[key]||'';
+      inp.addEventListener('input',()=>{ rec[key]=inp.value; saveSoon(); }); return inp; };
+    tr.children[4].appendChild(mkIn('ref'));
+    tr.children[5].appendChild(mkIn('by'));
+    tr.children[6].appendChild(mkIn('date',null,'date'));
+    tr.children[7].appendChild(mkIn('notes'));
+    if(customIdx!=null){
+      tr.querySelector('.delcustom').addEventListener('click',()=>{
+        c.custom[i].splice(customIdx,1); save(); renderPanel(); renderChips();
+      });
+    }
+    return tr;
+  }
+  sec.procs.forEach((pr,r)=>{ tb.appendChild(mkRow(r+1, pr[0], pr[1], prog(i,r))); });
+  (c.custom[i]||[]).forEach((pr,k)=>{ tb.appendChild(mkRow(sec.procs.length+k+1, pr.text, pr.assertion, pr, null, k)); });
+  card.querySelector('#addProcBtn').addEventListener('click',()=>{
+    const t=card.querySelector('#newProc').value.trim();
+    if(!t) return;
+    if(!c.custom[i]) c.custom[i]=[];
+    c.custom[i].push({text:t, assertion:card.querySelector('#newProcAssert').value.trim(), done:false, ref:'', by:'', date:'', notes:''});
+    save(); renderPanel(); renderChips();
+  });
+  p.appendChild(card);
+}
+
+/* ---------- XLSX export (pure JS, no compression) ---------- */
+function crc32(u8){
+  if(!crc32.t){ crc32.t=new Uint32Array(256);
+    for(let n=0;n<256;n++){ let cc=n; for(let k=0;k<8;k++) cc=(cc&1)?(0xEDB88320^(cc>>>1)):(cc>>>1); crc32.t[n]=cc>>>0; } }
+  let cc=0xFFFFFFFF;
+  for(let i=0;i<u8.length;i++) cc=crc32.t[(cc^u8[i])&0xFF]^(cc>>>8);
+  return (cc^0xFFFFFFFF)>>>0;
+}
+function zipStore(entries){
+  const enc=new TextEncoder(); const parts=[]; const central=[]; let off=0;
+  entries.forEach(f=>{
+    const name=enc.encode(f.name), data=f.data, crc=crc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true);
+    lh.setUint16(8,0,true); lh.setUint16(10,0,true); lh.setUint16(12,0x21,true); lh.setUint16(14,0,true);
+    lh.setUint32(16,crc,true); lh.setUint32(20,data.length,true); lh.setUint32(24,data.length,true);
+    lh.setUint16(26,name.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),name,data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true);
+    ch.setUint16(10,0,true); ch.setUint16(12,0,true); ch.setUint16(14,0x21,true); ch.setUint16(16,0,true);
+    ch.setUint32(16,crc,true); ch.setUint32(20,data.length,true); ch.setUint32(24,data.length,true);
+    ch.setUint16(28,name.length,true); ch.setUint16(30,0,true); ch.setUint16(32,0,true);
+    ch.setUint16(34,0,true); ch.setUint16(36,0,true); ch.setUint32(38,0,true); ch.setUint32(42,off,true);
+    central.push(new Uint8Array(ch.buffer),name);
+    off+=30+name.length+data.length;
+  });
+  let csize=0; central.forEach(a=>csize+=a.length);
+  const end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true); end.setUint16(8,entries.length,true); end.setUint16(10,entries.length,true);
+  end.setUint32(12,csize,true); end.setUint32(16,off,true); end.setUint16(20,0,true);
+  return new Blob(parts.concat(central).concat([new Uint8Array(end.buffer)]),
+    {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function colRef(i){ let s=''; i++; while(i>0){ const m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=((i-1-m)/26)|0; } return s; }
+function xesc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function sheetXml(rows,widths){
+  let rxml='';
+  rows.forEach((r,ri)=>{
+    rxml+='<row r="'+(ri+1)+'">';
+    r.forEach((cell,ci)=>{
+      if(cell==null||cell.v===''||cell.v==null) return;
+      const ref=colRef(ci)+(ri+1); const s=cell.s?(' s="'+cell.s+'"'):'';
+      if(cell.t==='n') rxml+='<c r="'+ref+'"'+s+'><v>'+cell.v+'</v></c>';
+      else rxml+='<c r="'+ref+'"'+s+' t="inlineStr"><is><t xml:space="preserve">'+xesc(cell.v)+'</t></is></c>';
+    });
+    rxml+='</row>';
+  });
+  const cols=widths?('<cols>'+widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join('')+'</cols>'):'';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'+
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<sheetViews><sheetView rightToLeft="1" workbookViewId="0"/></sheetViews>'+cols+'<sheetData>'+rxml+'</sheetData></worksheet>';
+}
+const S_BOLD=1, S_NUM2=2, S_NUM0=3;
+function stylesXml(){
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'+
+  '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+  '<numFmts count="2"><numFmt numFmtId="164" formatCode="#,##0.00"/><numFmt numFmtId="165" formatCode="#,##0"/></numFmts>'+
+  '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>'+
+  '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'+
+  '<borders count="1"><border/></borders>'+
+  '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+  '<cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+  '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>'+
+  '<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'+
+  '<xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>'+
+  '</styleSheet>';
+}
+function buildXlsx(){
+  const c=cur(); const enc=new TextEncoder();
+  const sheets=[];
+  // Sheet 1: client info
+  let rows=[[{v:'بيانات العميل والمعلومات الأساسية',s:S_BOLD}],[]];
+  DATA.infoFields.concat(['ملاحظات عامة']).forEach(f=>rows.push([{v:f,s:S_BOLD},{v:c.info[f]||''}]));
+  sheets.push({name:'بيانات العميل',rows,widths:[32,50]});
+  // Sheet 2: study
+  rows=[[{v:'بيانات الدراسة: الحد الأدنى للدراسة',s:S_BOLD}],[],
+    [{v:'القسم',s:S_BOLD},{v:'الرصيد حسب الدفاتر',s:S_BOLD},{v:'نسبة الدراسة الدنيا %',s:S_BOLD},{v:'أقل مبلغ لازم تدرسه',s:S_BOLD}]];
+  let totB=0,totM=0,has=false;
+  DATA.study.forEach((row,i)=>{
+    const bal=num(c.studyBal[i]!==undefined?c.studyBal[i]:'');
+    const pct=num(c.studyPct[i]!==undefined?c.studyPct[i]:row[1]);
+    const min=(bal!=null&&pct!=null)?bal*pct/100:null;
+    if(min!=null){has=true;totB+=bal;totM+=min;}
+    rows.push([{v:row[0]},{t:'n',v:bal!=null?bal:'',s:S_NUM2},{t:'n',v:pct!=null?pct:''},{t:'n',v:min!=null?Math.round(min*100)/100:'',s:S_NUM2}]);
+  });
+  if(has) rows.push([{v:'الإجمالي',s:S_BOLD},{t:'n',v:totB,s:S_NUM2},{v:''},{t:'n',v:Math.round(totM*100)/100,s:S_NUM2}]);
+  rows.push([]); rows.push([{v:'النسب الدنيا مقترحة من الممارسة الشائعة وليست إلزامية من معيار المراجعة 530.'}]);
+  sheets.push({name:'بيانات الدراسة',rows,widths:[40,20,20,22]});
+  // Sheet 3: materiality calc
+  const m=c.mat; const r=matCompute(m);
+  const basisNames={revenue:'إجمالي الإيرادات والتبرعات',expenses:'إجمالي المصروفات',assets:'إجمالي الأصول',netassets:'صافي الأصول'};
+  rows=[[{v:'حساب الأهمية النسبية',s:S_BOLD}],[],
+    [{v:'أساس الأهمية',s:S_BOLD},{v:basisNames[m.basis]||''}],
+    [{v:'مبلغ الأساس',s:S_BOLD},{t:'n',v:num(m.amount)!=null?num(m.amount):'',s:S_NUM2}],
+    [{v:'النسبة المطبقة %',s:S_BOLD},{t:'n',v:num(m.pct)!=null?num(m.pct):''}],
+    [{v:'الأهمية النسبية الكلية',s:S_BOLD},{t:'n',v:r.overall!=null?Math.round(r.overall*100)/100:'',s:S_NUM2}],
+    [{v:'نسبة أهمية الأداء %',s:S_BOLD},{t:'n',v:num(m.perf)!=null?num(m.perf):''}],
+    [{v:'أهمية الأداء',s:S_BOLD},{t:'n',v:r.perf!=null?Math.round(r.perf*100)/100:'',s:S_NUM2}],
+    [{v:'نسبة حد الأخطاء التافهة %',s:S_BOLD},{t:'n',v:num(m.trivial)!=null?num(m.trivial):''}],
+    [{v:'حد الأخطاء الواضحة التافهة',s:S_BOLD},{t:'n',v:r.triv!=null?Math.round(r.triv*100)/100:'',s:S_NUM2}],
+    [{v:'ملاحظات',s:S_BOLD},{v:m.notes||''}]];
+  sheets.push({name:'حساب الأهمية',rows,widths:[32,40]});
+  // Program sheets
+  const sheetShort=['01-الأهمية النسبية','02-النقد','03-الذمم المدينة','04-أعمال تحت التنفيذ','05-الأصول الثابتة','06-الدائنون','07-نهاية الخدمة','08-التبرعات','09-المصروفات','10-ضريبة القيمة المضافة'];
+  DATA.sections.forEach((sec,i)=>{
+    const rows=[[{v:'برنامج المراجعة - '+sec.title,s:S_BOLD}],[],
+      [{v:'م',s:S_BOLD},{v:'إجراء المراجعة',s:S_BOLD},{v:'الإقرار/الهدف',s:S_BOLD},{v:'تم',s:S_BOLD},
+       {v:'مرجع ورقة العمل',s:S_BOLD},{v:'المنفذ',s:S_BOLD},{v:'التاريخ',s:S_BOLD},{v:'الملاحظات',s:S_BOLD}]];
+    const all=sec.procs.map(p=>({text:p[0],assertion:p[1]})).concat(c.custom[i]||[]);
+    all.forEach((p,k)=>{
+      const rec = k<sec.procs.length ? (c.prog[i]&&c.prog[i][k])||{} : p;
+      rows.push([{t:'n',v:k+1},{v:p.text},{v:p.assertion},{v:rec.done?'تم':''},
+        {v:rec.ref||''},{v:rec.by||''},{v:rec.date||''},{v:rec.notes||''}]);
+    });
+    sheets.push({name:sheetShort[i],rows,widths:[5,60,18,7,16,14,12,30]});
+  });
+  // package
+  const ct=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">',
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>',
+    '<Default Extension="xml" ContentType="application/xml"/>',
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>',
+    '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'];
+  sheets.forEach((s,i)=>ct.push('<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'));
+  ct.push('</Types>');
+  let wbXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>';
+  sheets.forEach((s,i)=>{ wbXml+='<sheet name="'+xesc(s.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>'; });
+  wbXml+='</sheets></workbook>';
+  let rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+  sheets.forEach((s,i)=>{ rels+='<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>'; });
+  rels+='<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  const files=[{name:'[Content_Types].xml',data:enc.encode(ct.join('\n'))},
+    {name:'_rels/.rels',data:enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')},
+    {name:'xl/workbook.xml',data:enc.encode(wbXml)},
+    {name:'xl/_rels/workbook.xml.rels',data:enc.encode(rels)},
+    {name:'xl/styles.xml',data:enc.encode(stylesXml())}];
+  sheets.forEach((s,i)=>files.push({name:'xl/worksheets/sheet'+(i+1)+'.xml',data:enc.encode(sheetXml(s.rows,s.widths))}));
+  return zipStore(files);
+}
+function download(blob,filename){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
+$('#exportXls').addEventListener('click',()=>{
+  const c=cur(); const nm=((c.info&&c.info['اسم العميل'])||c.name||'عميل').replace(/[\\/:*?"<>|]/g,'-');
+  download(buildXlsx(),'برنامج-المراجعة-'+nm+'.xlsx');
+});
+$('#backupBtn').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify({app:'audit-program',v:1,data:state},null,1)],{type:'application/json'});
+  download(blob,'نسخة-احتياطية-مراجعة-'+new Date().toISOString().slice(0,10)+'.json');
+});
+$('#restoreBtn').addEventListener('click',()=>$('#restoreFile').click());
+$('#restoreFile').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{
+      const j=JSON.parse(rd.result);
+      if(j && j.app==='audit-program' && j.data && j.data.clients && j.data.clients.length){
+        state=j.data; if(!cur()) state.current=state.clients[0].id;
+        save(); renderAll();
+      }
+    }catch(err){} };
+  rd.readAsText(f); e.target.value='';
+});
+
+/* ---------- boot ---------- */
+function renderAll(){ renderClients(); renderChips(); renderPanel(); }
+load(); renderAll();
+</script>
+</body>
+</html>
