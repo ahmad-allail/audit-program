@@ -123,9 +123,11 @@ function calc(){const c={cur:{},act:{},accs:{},unm:[],td:0,tc:0};
 function splitLine(l){const sep=l.includes('\t')?'\t':(l.split(';').length>2?';':',');const out=[];let cur='',q=false;
  for(const ch of l){if(ch==='"'){q=!q}else if(ch===sep&&!q){out.push(cur);cur=''}else cur+=ch}out.push(cur);return out.map(s=>s.trim())}
 function parseTB(text){const rows=text.split(/\r?\n/).filter(l=>l.trim()).map(splitLine);let di=-1,ci=-1,ni=-1,ki=-1,bi=-1;const res=[];
- for(let i=0;i<Math.min(rows.length,10);i++){const r=rows[i].map(norm);const dd=lastIdx(r,x=>/(مدين|debit|^dr$)/.test(x)),cc=lastIdx(r,x=>/(دا[ئي]ن|credit|^cr$)/.test(x));
-  if(dd>=0&&cc>=0){di=dd;ci=cc;ni=r.findIndex(x=>/(اسم|بيان|حساب|account|name|description)/.test(x)&&!/(رقم|كود|code)/.test(x));ki=r.findIndex(x=>/(رقم|كود|code)/.test(x));rows.splice(0,i+1);break}
-  const bb=r.findIndex(x=>/^(الرصيد|رصيد|balance)/.test(x));if(bb>=0){bi=bb;ni=r.findIndex(x=>/(اسم|بيان|حساب|account|name)/.test(x)&&!/(رقم|كود)/.test(x));ki=r.findIndex(x=>/(رقم|كود|code)/.test(x));rows.splice(0,i+1);break}}
+ let found=false;
+ for(let i=0;i<Math.min(rows.length,12)&&!found;i++){const r=rows[i].map(norm);const dd=lastIdx(r,x=>/(مدين|debit|^dr$)/.test(x)),cc=lastIdx(r,x=>/(دا[ئي]ن|credit|^cr$)/.test(x));
+  if(dd>=0&&cc>=0){di=dd;ci=cc;ni=r.findIndex(x=>/(اسم|بيان|حساب|account|name|description)/.test(x)&&!/(رقم|كود|رمز|code)/.test(x));ki=r.findIndex(x=>/(رقم|كود|رمز|code)/.test(x));rows.splice(0,i+1);found=true}}
+ for(let i=0;i<Math.min(rows.length,12)&&!found;i++){const r=rows[i].map(norm);
+  const bb=r.findIndex(x=>/^(الرصيد|رصيد|balance)/.test(x));if(bb>=0){bi=bb;ni=r.findIndex(x=>/(اسم|بيان|حساب|account|name)/.test(x)&&!/(رقم|كود|رمز)/.test(x));ki=r.findIndex(x=>/(رقم|كود|رمز|code)/.test(x));rows.splice(0,i+1);found=true}}
  rows.forEach(r=>{let name='',code='',dr=0,cr=0;
   if(di>=0){dr=num(r[di])||0;cr=num(r[ci])||0;name=r[ni>=0?ni:r.findIndex((x,j)=>j!==di&&j!==ci&&!isNum(x))]||'';code=ki>=0?r[ki]:''}
   else if(bi>=0){const v=num(r[bi])||0;name=r[ni>=0?ni:r.findIndex((x,j)=>j!==bi&&!isNum(x))]||'';code=ki>=0?r[ki]:'';if(v>=0)dr=v;else cr=-v}
@@ -135,19 +137,20 @@ function parseTB(text){const rows=text.split(/\r?\n/).filter(l=>l.trim()).map(sp
   if(!name||TOT_RE.test(norm(name)))return;if(!dr&&!cr)return;
   if(dr<0&&!cr){cr=-dr;dr=0}else if(cr<0&&!dr){dr=-cr;cr=0}
   res.push({id:nid(),code,name,dr,cr})});return res}
-async function readXlsx(buf){const u=new Uint8Array(buf),dv=new DataView(buf);let e=u.length-22;while(e>0&&dv.getUint32(e,true)!==0x06054b50)e--;
+async function readXlsx(buf,all){const u=new Uint8Array(buf),dv=new DataView(buf);let e=u.length-22;while(e>0&&dv.getUint32(e,true)!==0x06054b50)e--;
  const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const files={};const dec=new TextDecoder();
  for(let i=0;i<n;i++){const meth=dv.getUint16(p+10,true),csz=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
   const name=dec.decode(u.subarray(p+46,p+46+nl));files[name]={meth,csz,lo};p+=46+nl+el+cl}
  async function get(nm){const f=files[nm];if(!f)return null;const ln=dv.getUint16(f.lo+26,true),le=dv.getUint16(f.lo+28,true),st=f.lo+30+ln+le,data=u.subarray(st,st+f.csz);
   if(f.meth===0)return dec.decode(data);const ds=new DecompressionStream('deflate-raw');const w=ds.writable.getWriter();w.write(data);w.close();return dec.decode(await new Response(ds.readable).arrayBuffer())}
  const ss=[];const sx=await get('xl/sharedStrings.xml');if(sx){const d=new DOMParser().parseFromString(sx,'text/xml');d.querySelectorAll('si').forEach(si=>ss.push([...si.querySelectorAll('t')].map(t=>t.textContent).join('')))}
- const sheets=Object.keys(files).filter(k=>/^xl\/worksheets\/sheet\d+\.xml$/.test(k));let best=[];
+ const sheets=Object.keys(files).filter(k=>/^xl\/worksheets\/sheet\d+\.xml$/.test(k));let best=[];const allSh=[];
+ const names={};try{const wb=await get('xl/workbook.xml'),rl=await get('xl/_rels/workbook.xml.rels');if(wb&&rl){const rd=new DOMParser().parseFromString(rl,'text/xml'),tg={};rd.querySelectorAll('Relationship').forEach(r=>tg[r.getAttribute('Id')]='xl/'+String(r.getAttribute('Target')).replace(/^\/?(xl\/)?/,''));const wd=new DOMParser().parseFromString(wb,'text/xml');[...wd.querySelectorAll('sheet')].forEach((sh,i)=>{const id=sh.getAttribute('r:id')||sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id');names[tg[id]]={n:sh.getAttribute('name'),i}})}}catch(x){}
  for(const nmx of sheets){const sh=new DOMParser().parseFromString(await get(nmx),'text/xml');const lines=[];
  sh.querySelectorAll('row').forEach(r=>{const cells=[];r.querySelectorAll('c').forEach(c=>{const ref=c.getAttribute('r')||'',col=ref.replace(/[0-9]/g,'');let ci=0;for(const ch of col)ci=ci*26+ch.charCodeAt(0)-64;ci--;
   const t=c.getAttribute('t'),v=c.querySelector('v');let val='';if(t==='s'&&v)val=ss[+v.textContent]||'';else if(t==='inlineStr')val=c.textContent;else if(v)val=v.textContent;cells[ci]=val});
-  lines.push(Array.from(cells,x=>x==null?'':String(x).replace(/[\t\r\n]/g,' ')).join('\t'))});if(lines.length>best.length)best=lines}
- return best.join('\n')}
+  lines.push(Array.from(cells,x=>x==null?'':String(x).replace(/[\t\r\n]/g,' ')).join('\t'))});allSh.push({name:(names[nmx]||{}).n||nmx,ord:(names[nmx]||{i:999}).i,text:lines.join('\n')});if(lines.length>best.length)best=lines}
+ if(all)return allSh.sort((a,b)=>a.ord-b.ord);return best.join('\n')}
 const PB=[
 ['عام','ترخيص الجمعية وشهادة التسجيل لدى المركز الوطني لتنمية القطاع غير الربحي، والنظام الأساسي، وقرار تشكيل مجلس الإدارة'],
 ['عام','محاضر الجمعية العمومية ومجلس الإدارة واللجان للسنة ولما بعد تاريخ القوائم'],
@@ -198,7 +201,20 @@ const lastIdx=(r,f)=>{for(let i=r.length-1;i>=0;i--)if(f(r[i]))return i;return -
 const nm=s=>norm(s).replace(/[^\u0600-\u06FFa-z0-9]+/g,' ').trim();
 const HDR_RE=/^(الاصول|اصول|الاصول المتداوله|اصول متداوله|الاصول غير المتداوله|اصول غير متداوله|الخصوم|خصوم|الالتزامات|التزامات|الالتزامات المتداوله|خصوم متداوله|حقوق الملكيه|الايرادات|ايرادات|المصروفات|مصروفات|المصاريف|مصاريف|الاصول الثابته|اصول ثابته|الاصول الوقفيه)$/;
 const TOT_RE=/^(الاجمالي|اجمالي|المجموع|مجموع|اجمالى|الاجمالى|total|sub ?total|grand total)/;
-function detectHier(list){const n=list.length,v=list.map(amt),end=list.map((_,i)=>i+1);
+function detectHierCode(list){
+ for(let i=list.length-1;i>=0;i--)if(list[i].res)list.splice(i,1);
+ const ok=list.length>=5&&list.filter(a=>/^\d{1,15}$/.test(String(a.code||'').trim())).length>=0.9*list.length;if(!ok)return false;
+ const m={};list.forEach(a=>{a.code=String(a.code).trim();m[a.code]=a});
+ const ch={};let withP=0;
+ list.forEach(a=>{a.par=false;a.pid='';a.why='';for(let k=a.code.length-1;k>=1;k--){const p=m[a.code.slice(0,k)];if(p&&p!==a){a.pid=p.id;(ch[p.id]=ch[p.id]||[]).push(a);withP++;break}}});
+ if(withP<0.2*list.length){list.forEach(a=>{a.pid=''});return false}
+ const add=[];
+ list.forEach(a=>{const c=ch[a.id];if(!c)return;a.par=true;a.why='حساب رئيسي له حسابات فرعية (حسب رقم الحساب)';
+  const r=amt(a)-c.reduce((s,x)=>s+amt(x),0);
+  if(Math.abs(r)>=0.5){add.push({id:nid(),code:a.code,name:a.name+' (رصيد الحساب نفسه دون الفرعية)',dr:r>0?Math.round(r*100)/100:0,cr:r<0?Math.round(-r*100)/100:0,pid:a.pid,par:false,why:'',res:1,after:a})}});
+ add.forEach(x=>{const at=list.indexOf(x.after);delete x.after;list.splice(at+1,0,x)});
+ return true}
+function detectHier(list){if(detectHierCode(list))return;const n=list.length,v=list.map(amt),end=list.map((_,i)=>i+1);
  for(let k=n-1;k>=0;k--){if(Math.abs(v[k])<0.5)continue;let pos=k+1,sum=0;
   while(pos<n){sum+=v[pos];pos=end[pos];if(Math.abs(sum-v[k])<=1){end[k]=pos;break}}}
  list.forEach(a=>{a.par=false;a.pid='';a.why=''});
@@ -339,19 +355,60 @@ function rLed(c){const R=resolveAll(),nat=(l,v)=>(l.sec==='A'||l.sec==='X')?v:-v
  <p class="note">المجتمع: الحركات ذات المبلغ غير الصفري بعد استبعاد الأرصدة الافتتاحية وأسطر المجاميع. عند إعادة السحب تُمسح علامات الفحص السابقة.</p>
  ${ledSel?`<p>المجتمع الحالي: <b>${pp.length}</b> حركة · القيمة المطلقة <b>${fm(pp.reduce((s,r)=>s+Math.abs(r.amt),0))}</b></p>${subTbl}`:''}
  <div class="tw">${sm?`<p><b>${E(scopeName(ledSel))}</b>: عينة ${sm.items.length} من ${sm.pop.n}</p>`:''}<table id="smt"><tr><th>#</th><th>التاريخ</th><th>الحساب الفرعي</th><th>البيان</th><th>المبلغ</th><th>المستند</th><th>سبب الاختيار</th><th>القيد صحيح</th><th>المستند مرفق</th><th>معتمد</th><th>ملاحظات</th></tr>${items||'<tr><td colspan=11 class="note">لم تُسحب عينة بعد</td></tr>'}</table></div></div>`}
-function parsePrior(text){const rows=text.split(/\r?\n/).filter(l=>l.trim()).map(splitLine),got={},un=[];
- rows.forEach(r=>{const label=r.find(x=>x&&!isNum(x))||'';if(!label||TOT_RE.test(norm(label)))return;let ns=r.filter(x=>x&&isNum(x)).map(num);if(ns.length>1){const big=ns.filter(v=>!(Number.isInteger(v)&&Math.abs(v)<100));if(big.length)ns=big}
-  if(!ns.length)return;const v=ns[0];if(!v)return;const n=norm(label);let id=(LN.find(l=>norm(l.ar)===n)||{}).id;if(!id){const s=suggest(label);if(s)id=s}
-  if(!id||L[id].sec==='NA'&&!/صافي/.test(n)){un.push(label);return}got[id]=(got[id]||0)+(L[id].sec==='NA'?v:Math.abs(v))});return{got,un}}
+function parsePrior(text,first){const rows=text.split(/\r?\n/).filter(l=>l.trim()).map(splitLine),got={},un=[];
+ let vc=-1,bestY=0;
+ for(let i=0;i<Math.min(rows.length,40)&&vc<0;i++){const ys=[];const f0=rows[i].findIndex(x=>x);rows[i].forEach((x,j)=>{if(j===f0)return;const m=String(x).match(/(?:^|[^0-9])((?:19|20)\d\d|14\d\d)(?![0-9])/);if(m&&!isNum(x)||/^(20\d\d|14\d\d)$/.test(String(x).trim()))ys.push([j,+(m?m[1]:x)])});
+  if(ys.length>=1&&rows[i].filter(x=>x&&isNum(x)&&!/^-?\d{1,3}$/.test(String(x).trim())).length===0){let mx=0;ys.forEach(([j,y])=>{if(y>mx){mx=y;vc=j}});bestY=mx}}
+ rows.forEach(r=>{const label=r.find(x=>x&&!isNum(x))||'';if(!label||TOT_RE.test(norm(label)))return;let v;
+  if(vc>=0&&isNum(r[vc]||'')){v=num(r[vc])}else{let ns=r.filter(x=>x&&isNum(x)).map(num);if(vc>=0)ns=[];if(ns.length>1){const big=ns.filter(x=>!(Number.isInteger(x)&&Math.abs(x)<100));if(big.length)ns=big}v=ns[0]}
+  if(!v)return;const n=norm(label);let id=(LN.find(l=>norm(l.ar)===n)||{}).id;if(!id){const s=suggest(label);if(s)id=s}
+  if(!id){const q=[[/(منح|اعان)/,'r_gov'],[/(بيع اصول|مكاسب)/,'r_gain'],[/عينيه/,'r_ink'],[/^اصول الاوقاف/,'e_ppe']].find(z=>z[0].test(n));if(q)id=q[1]}
+  if(!id||L[id].sec==='NA'&&!/صافي/.test(n)){un.push(label);return}if(first&&first[id]!==undefined)return;got[id]=(got[id]||0)+(L[id].sec==='NA'?v:Math.abs(v))});return{got,un,year:bestY}}
+async function priorFromXlsx(buf){const sh=await readXlsx(buf,true);const keep=sh.filter(x=>/(مركز|انشط|دخل|ايراد)/.test(norm(x.name))&&!/تدفق/.test(norm(x.name)));const use=keep.length?keep:sh.filter(x=>!/(غلاف|فهرس)/.test(norm(x.name)));
+ const got={},un=[];let year=0;use.forEach(x=>{const p=parsePrior(x.text,got);Object.keys(p.got).forEach(k=>{if(got[k]===undefined)got[k]=p.got[k]});p.un.forEach(u=>un.push(u));if(p.year>year)year=p.year});return{got,un,year,sheets:use.map(x=>x.name)}}
 
 
 function glSummary(l){RC=null;const R=resolveAll();const mapped=l.length;return 'تم إدخال '+mapped+' حركة'+(l.skipped?' (تم تجاهل '+l.skipped+' سطر مجاميع)':'')+(Object.keys(R.unm).length?'، منها حسابات غير مربوطة بالميزان: '+Object.keys(R.unm).length+' (اربطها من القائمة أدناه).':'، وكلها مربوطة بالميزان.')}
 function setAcc(id,l){S.gl=S.gl.filter(e=>e.t!==id);l.forEach(e=>{e.t=id;e.m=1});S.gl.push(...l);glDirty=true;ledMsg='';}
 function ensureGL(){if(S.ledgers&&Object.keys(S.ledgers).length){Object.keys(S.ledgers).forEach(id=>(S.ledgers[id]||[]).forEach(r=>S.gl.push({a:'',k:'',d:r.d,desc:r.desc,dr:num(r.dr)||0,cr:num(r.cr)||0,ref:r.ref,t:id,m:1,f:(!String(r.desc||'').trim()&&!r.ref)?'open':''})));S.ledgers={};S.samples={};glDirty=true;save()}}
 ensureGL();
+/* ---- قراءة PDF للقوائم السابقة ---- */
+let PDFST={busy:false,msg:'',pages:[],sel:{},col:{},map:{},val:{},done:false,mode:''};
+function loadScript(src){return new Promise((ok,no)=>{if(document.querySelector('script[data-lib="'+src+'"]'))return ok();const e=document.createElement('script');e.src=src;e.dataset.lib=src;e.onload=ok;e.onerror=()=>no(new Error('تعذر تحميل '+src));document.head.appendChild(e)})}
+async function ensurePdfLibs(){await loadScript('pdf.min.js');await loadScript('tesseract.min.js');await loadScript('pdfimport.js')}
+function priorId(label){const n=norm(label);if(!n||TOT_RE.test(n))return'';let id=(LN.find(l=>norm(l.ar)===n)||{}).id;if(!id){const s=suggest(label);if(s)id=s}
+ if(!id){const q=[[/(منح|اعان)/,'r_gov'],[/(بيع اصول|مكاسب)/,'r_gain'],[/عينيه/,'r_ink'],[/^اصول الاوقاف/,'e_ppe']].find(z=>z[0].test(n));if(q)id=q[1]}
+ if(!id||L[id].sec==='NA'&&!/صافي/.test(n))return'';return id}
+function pdfPageView(p){const vals=[];p.rows.forEach(r=>r.vals.forEach(v=>vals.push(v)));const H=p.H||20;
+ const xs=vals.map(v=>v.x).sort((a,b)=>b-a);const cl=[];xs.forEach(x=>{const c=cl[cl.length-1];if(c&&c.min-x<2.4*H){c.min=x;c.n++}else cl.push({max:x,min:x,n:1})});
+ const colOf=v=>cl.findIndex(c=>v.x<=c.max+1&&v.x>=c.min-1);
+ let noteCol=-1;if(cl.length>=2){const nv=vals.filter(v=>colOf(v)===0);if(nv.length>=2&&nv.every(v=>v.v!==null&&Math.abs(v.v)<100&&Number.isInteger(v.v)))noteCol=0}
+ const first=noteCol===0?1:0,nc=cl.length-first;const def=nc>=4?nc-2:0;const sel=PDFST.col[p.n]===undefined?def:Math.min(PDFST.col[p.n],Math.max(nc-1,0));
+ const rows=p.rows.map((r,i)=>{const key=p.n+':'+i;const vv=r.vals.find(v=>colOf(v)===first+sel);const lab=String(r.label||'').replace(/[\u200e\u200f\u202a-\u202e]/g,'').trim();
+  const val=PDFST.val[key]!==undefined?PDFST.val[key]:(vv?(vv.v===null?'':vv.v):'');const raw=vv?vv.raw:'';
+  const auto=priorId(lab);const id=PDFST.map[key]!==undefined?PDFST.map[key]:auto;
+  return{key,lab,val,raw,unk:!!(vv&&vv.unk),id,has:!!vv,tot:TOT_RE.test(norm(lab))||/^(اجمال|مجموع)/.test(norm(lab))}}).filter(r=>r.has||r.val!=='');
+ return{rows,nc,sel,def}}
+function pdfTitle(p){const t=p.rows.slice(0,10).map(r=>r.label).find(l=>/(قائمه|قائمة|ايضاح|إيضاح|تقرير)/.test(l.replace(/[ًٌٍَُِّْ]/g,'')));return(t||(p.rows[0]||{}).label||'').replace(/[A-Za-z0-9\u200e\u200f]/g,'').trim().slice(0,45)}
+function pdfAutoSel(pages){pages.forEach(p=>{const ts=p.rows.slice(0,8).map(r=>norm(String(r.label||'').replace(/[\u200e\u200f\u202a-\u202e]/g,''))).filter(l=>/^قا.مه/.test(l)&&!/\.\.|…/.test(l));
+  const t=ts[0]||'';PDFST.sel[p.n]=/(مركز\s*ال\s*م|انشط)/.test(t)&&!/تدفق/.test(t)})}
+function pdfApplyTotals(){const acc={};let n=0;PDFST.pages.forEach(p=>{if(!PDFST.sel[p.n])return;pdfPageView(p).rows.forEach(r=>{if(!r.id||r.val===''||r.val===null)return;const v=num(r.val);if(!v)return;acc[r.id]=(acc[r.id]||0)+(L[r.id].sec==='NA'?v:Math.abs(v));n++})});return{acc,n}}
+function rPdf(){const P=PDFST;if(!P.busy&&!P.msg&&!P.pages.length)return'';
+ let h=`<div class="card"><h3>قراءة ملف PDF</h3>`;if(P.msg)h+=`<p class="${P.err?'bad':'ok'}">${E(P.msg)}</p>`;
+ if(P.busy){return h+'<p class="note">القراءة تتم داخل جهازك، ولا يُرسل الملف لأي جهة. لا تغلق الصفحة.</p></div>'}
+ if(!P.pages.length)return h+'</div>';
+ h+=`<p class="note">${P.mode==='text'?'الملف يحتوي نصاً، فقُرئت الأرقام كما هي.':'الملف مصوّر (ممسوح ضوئياً)، فقُرئ بقراءة ضوئية محلية. الأرقام قد يقع فيها خطأ: قارن كل رقم بالملف الأصلي قبل الاعتماد. الخانات الحمراء فيها رمز لم يُقرأ (؟) وتحتاج تصحيحاً.'} الصفحات المقترحة هي صفحات المركز المالي وقائمة الأنشطة، وتقدر تغيّرها.</p><div class="tw"><table><tr><th>استخدم</th><th>الصفحة</th><th>العنوان</th><th>العمود</th></tr>`;
+ P.pages.forEach(p=>{const v=pdfPageView(p);h+=`<tr><td><input type="checkbox" data-pdfpg="${p.n}" ${P.sel[p.n]?'checked':''}></td><td>${p.n}</td><td>${E(pdfTitle(p))}</td><td><select data-pdfcol="${p.n}">${Array.from({length:Math.max(v.nc,1)},(_,i)=>`<option value="${i}" ${i===v.sel?'selected':''}>${i===0?'الأول من اليمين (الأحدث)':'رقم '+(i+1)+' من اليمين'}</option>`).join('')}</select></td></tr>`});
+ h+='</table></div>';
+ let body='';P.pages.forEach(p=>{if(!P.sel[p.n])return;const v=pdfPageView(p);body+=`<tr class="hd"><td colspan=4>صفحة ${p.n}${v.nc>1?` · ${v.nc} أعمدة أرقام`:''}</td></tr>`;
+  v.rows.forEach(r=>{const bad=r.unk||(r.val===''&&r.has);body+=`<tr class="${r.id?'':(r.tot?'':'un')}"><td>${E(r.lab)}</td><td><input class="num ${bad?'bad':''}" data-pdfval="${r.key}" value="${E(r.val)}" style="min-width:110px;${bad?'background:#fde2e2':''}"></td><td class="note" dir="ltr">${E(r.raw)}</td><td><select data-pdfmap="${r.key}">${lineOpts(r.id)}</select></td></tr>`})});
+ const t=pdfApplyTotals(),A=LN.filter(l=>l.sec==='A').reduce((s,l)=>s+(t.acc[l.id]||0),0),Lb=LN.filter(l=>l.sec==='L').reduce((s,l)=>s+(t.acc[l.id]||0),0),NA=LN.filter(l=>l.sec==='NA').reduce((s,l)=>s+(t.acc[l.id]||0),0);
+ h+=`<div class="tw"><table><tr><th>البند كما قُرئ</th><th>المبلغ</th><th>القراءة الخام</th><th>البند في القوائم</th></tr>${body||'<tr><td colspan=4 class="note">اختر صفحة</td></tr>'}</table></div>
+ <p>فحص قبل الاعتماد: أصول ${fm(A)} / التزامات ${fm(Lb)} / صافي أصول ${fm(NA)} ← ${A===0&&Lb===0?'':Math.abs(A-Lb-NA)<1?'<span class="ok">متوازن</span>':'<span class="bad">غير متوازن بفرق '+fm(A-Lb-NA)+' (راجع الأرقام)</span>'}</p>
+ <button class="b" data-act="pdfapply">اعتماد وتعبئة القوائم السابقة (${Object.keys(t.acc).length} بند)</button><button class="b s" data-act="pdfclear">مسح</button></div>`;return h}
 function rPrior(c){if(S.client.mode!=='prior')return`<div class="card"><h2>القوائم السابقة</h2><p>الحالة «سنة أولى»، فلا حاجة لهذا التبويب. غيّر الحالة من بيانات العميل لإدخال آخر قوائم مالية.</p></div>`;
  const grp=(sec,lab)=>`<tr class="hd"><td colspan=2>${lab}</td></tr>`+LN.filter(l=>l.sec===sec).map(l=>`<tr><td>${l.ar}</td><td><input class="num" data-prior="${l.id}" value="${S.prior[l.id]||''}"></td></tr>`).join('');
- return`<div class="card"><h3>استيراد آخر قوائم مالية من إكسل</h3><p class="note">ارفع ملف إكسل أو CSV للقوائم السابقة (أو الصق الجدول)، ويتعرف البرنامج على البنود بأسمائها ويعبّي الأرقام. يؤخذ أول عمود أرقام (السنة الأحدث) ويُتجاهل عمود رقم الإيضاح. القوائم الممسوحة ضوئياً (صور PDF) لا يمكن قراءتها.</p><label class="b">رفع القوائم السابقة (xlsx / csv)<input type="file" accept=".xlsx,.csv,.txt" data-act="priorfile" style="display:none"></label><details><summary>أو الصق الجدول</summary><textarea id="priorpaste"></textarea><button class="b" data-act="priorapply">تعبئة من الملصوق</button></details>${priorMsg?`<p class="ok">${priorMsg}</p>`:''}</div><div class="card"><h2>آخر قوائم مالية (أرقام السنة السابقة)</h2><p class="note">أدخل الأرقام كما ظهرت في آخر قوائم معتمدة. الأصول والالتزامات: رصيد نهاية السنة السابقة. صافي الأصول: رصيد نهاية السنة السابقة لكل فئة. الإيرادات والمصروفات: إجمالي كل بند للسنة السابقة.</p>
+ return`<div class="card"><h3>استيراد آخر قوائم مالية من إكسل</h3><p class="note">ارفع ملف إكسل أو CSV للقوائم السابقة (أو الصق الجدول)، ويتعرف البرنامج على البنود بأسمائها ويعبّي الأرقام. يؤخذ أول عمود أرقام (السنة الأحدث) ويُتجاهل عمود رقم الإيضاح. ملفات PDF (بما فيها الممسوحة ضوئياً) تُقرأ بالزر الثاني، مع مراجعة قبل الاعتماد.</p><label class="b">رفع القوائم السابقة (xlsx / csv)<input type="file" accept=".xlsx,.csv,.txt" data-act="priorfile" style="display:none"></label><details><summary>أو الصق الجدول</summary><textarea id="priorpaste"></textarea><button class="b" data-act="priorapply">تعبئة من الملصوق</button></details>${priorMsg?`<p class="ok">${priorMsg}</p>`:''}<div style="margin-top:10px"><label class="b">رفع القوائم السابقة (PDF، حتى الممسوح ضوئياً)<input type="file" accept=".pdf,application/pdf" data-act="priorpdf" style="display:none"></label></div></div>${rPdf()}<div class="card"><h2>آخر قوائم مالية (أرقام السنة السابقة)</h2><p class="note">أدخل الأرقام كما ظهرت في آخر قوائم معتمدة. الأصول والالتزامات: رصيد نهاية السنة السابقة. صافي الأصول: رصيد نهاية السنة السابقة لكل فئة. الإيرادات والمصروفات: إجمالي كل بند للسنة السابقة.</p>
  <div class="tw"><table><tr><th>البند</th><th>المبلغ</th></tr>${grp('A','الأصول')}${grp('L','الالتزامات')}${grp('NA','صافي الأصول في نهاية السنة السابقة')}${grp('R','إيرادات السنة السابقة')}${grp('X','مصروفات السنة السابقة')}</table></div>
  <h3>التدفقات النقدية للسنة السابقة (من آخر قوائم)</h3><div class="g"><div><label>التشغيلية</label><input class="num" data-pcf="op" value="${S.pcf.op||''}"></div><div><label>الاستثمارية</label><input class="num" data-pcf="inv" value="${S.pcf.inv||''}"></div><div><label>التمويلية</label><input class="num" data-pcf="fin" value="${S.pcf.fin||''}"></div><div><label>النقد أول السنة السابقة</label><input class="num" data-pcf="cash0" value="${S.pcf.cash0||''}"></div></div>
  <p>فحص: أصول ${fm(c.pA)} / التزامات ${fm(c.pL)} / صافي أصول ${fm(c.pNA)} ← ${Math.abs(c.pA-c.pL-c.pNA)<1?'<span class="ok">متوازن</span>':'<span class="bad">غير متوازن بفرق '+fm(c.pA-c.pL-c.pNA)+'</span>'}</p></div>`}
@@ -439,6 +496,8 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data
  else if(a==='ledadd'){if(!accSel){ledMsg='اختر الحساب في الميزان أولاً.';render();return}const l=parseGL($('ledpaste').value);if(!l.length){ledMsg='لم أجد حركات في النص.';render();return}setAcc(accSel,l);glMsg=glSummary(l);save();render()}
  else if(a==='tbexp'){const gs=groups();const any=gs.some(g=>S.open[g.id]);gs.forEach(g=>S.open[g.id]=!any);render()}
  else if(a==='rehier'){if(!confirm('سيعاد اكتشاف الإجماليات وتجميع الحسابات الرئيسية (تعديلاتك على أسماء المجموعات تُستبدل). متابعة؟'))return;detectHier(S.tb);const byId={};S.tb.forEach(x=>byId[x.id]=x);S.tb.forEach(x=>{if(x.par){delete S.map[x.id];return}if(!(S.map[x.id]||{}).line){let s=suggest(x.name),p=x,g=0;while(!s&&p.pid&&g++<20){p=byId[p.pid];if(p)s=suggest(p.name)}if(s)S.map[x.id]={line:s,cls:L[s].cls}}x.grp=groupFor(x,byId)});tbMsg='أعيد اكتشاف الإجماليات والتجميع.';save();render()}
+ else if(a==='pdfapply'){const t2=pdfApplyTotals(),k=Object.keys(t2.acc);if(!k.length){alert('لا توجد بنود معتمدة');return}k.forEach(id=>S.prior[id]=Math.round(t2.acc[id]*100)/100);priorMsg='تمت تعبئة '+k.length+' بند من ملف PDF. راجع الأرقام أدناه وقارنها بالملف الأصلي.';PDFST={busy:false,msg:'',pages:[],sel:{},col:{},map:{},val:{},done:false,mode:''};save();render();return}
+ else if(a==='pdfclear'){PDFST={busy:false,msg:'',pages:[],sel:{},col:{},map:{},val:{},done:false,mode:''};render();return}
  else if(a==='priorapply'){const r=parsePrior($('priorpaste').value);const k=Object.keys(r.got);if(!k.length){priorMsg='لم أتعرف على بنود في النص.';render();return}k.forEach(id=>S.prior[id]=r.got[id]);priorMsg='تمت تعبئة '+k.length+' بند من القوائم. راجع الأرقام أدناه.'+(r.un.length?' لم يُتعرف على: '+r.un.slice(0,12).map(E).join('، ')+(r.un.length>12?' ...':''):'');save();render()}
 });
 function readTable(tb){let h='<table>';tb.querySelectorAll('tr').forEach(r=>{h+='<tr>';r.querySelectorAll('th,td').forEach(c=>{let v;const s=c.querySelector('select'),i=c.querySelector('input');if(s)v=s.value;else if(i)v=i.type==='checkbox'?(i.checked?'✓':''):i.value;else v=c.textContent;h+='<td'+(c.colSpan>1?' colspan='+c.colSpan:'')+'>'+E(v)+'</td>'});h+='</tr>'});return h+'</table>'}
@@ -462,11 +521,21 @@ document.addEventListener('change',async e=>{const t=e.target,d=t.dataset;let r=
  else if(d.spinc!==undefined){S.sp.inc=t.checked;r=true}
  else if(d.sp){S.sp[d.sp]=(d.sp==='method')?t.value:(num(t.value)||0)}
  else if(d.sck){const it=S.samples[ledSel].items[+d.i];it[d.sck]=d.sck==='note'?t.value:t.checked}
- else if(d.act==='tbfile'||d.act==='ledfile'||d.act==='glfile'||d.act==='priorfile'){const f=t.files[0];if(!f)return;let text;try{text=/\.xlsx$/i.test(f.name)?await readXlsx(await f.arrayBuffer()):await f.text()}catch(x){alert('تعذرت قراءة الملف. إذا كان PDF ممسوحاً ضوئياً فلا يمكن قراءته، صدّره من نظام المحاسبة إلى إكسل. أو انسخ الجدول والصقه في المربع.');return}
+ else if(d.act==='tbfile'||d.act==='ledfile'||d.act==='glfile'||d.act==='priorfile'){const f=t.files[0];if(!f)return;let text,pf;try{if(d.act==='priorfile'&&/\.xlsx$/i.test(f.name)){pf=await priorFromXlsx(await f.arrayBuffer());text=''}else text=/\.xlsx$/i.test(f.name)?await readXlsx(await f.arrayBuffer()):await f.text()}catch(x){alert('تعذرت قراءة الملف. إذا كان PDF ممسوحاً ضوئياً فلا يمكن قراءته، صدّره من نظام المحاسبة إلى إكسل. أو انسخ الجدول والصقه في المربع.');return}
   if(d.act==='tbfile'){const l=parseTB(text);if(!l.length){alert('لم أجد أرصدة في الملف');return}addTB(l,false)}
   else if(d.act==='glfile'){const l=parseGL(text);if(!l.length){glMsg='لم أجد حركات في الملف. تأكد من وجود عمودي مدين ودائن.';render();return}S.gl.push(...l);glDirty=true;glMsg=glSummary(l)}
-  else if(d.act==='priorfile'){const p=parsePrior(text),k=Object.keys(p.got);if(!k.length){priorMsg='لم أتعرف على بنود في الملف.'}else{k.forEach(id=>S.prior[id]=p.got[id]);priorMsg='تمت تعبئة '+k.length+' بند من الملف. راجع الأرقام أدناه.'+(p.un.length?' لم يُتعرف على: '+p.un.slice(0,12).map(E).join('، '):'')}}
+  else if(d.act==='priorfile'){const p=pf||parsePrior(text),k=Object.keys(p.got);if(!k.length){priorMsg='لم أتعرف على بنود في الملف.'}else{k.forEach(id=>S.prior[id]=p.got[id]);priorMsg='تمت تعبئة '+k.length+' بند من الملف'+(p.year?' (عمود سنة '+p.year+')':'')+'. راجع الأرقام أدناه.'+(p.un.length?' لم يُتعرف على: '+p.un.slice(0,12).map(E).join('، '):'')}}
   else{if(!accSel){ledMsg='اختر الحساب في الميزان أولاً.';render();return}const l=parseGL(text);setAcc(accSel,l);glMsg=glSummary(l)}r=true}
+ else if(d.act==='priorpdf'){const f=t.files[0];t.value='';if(!f)return;PDFST={busy:true,msg:'جارٍ التحميل...',pages:[],sel:{},col:{},map:{},val:{},done:false,mode:''};render();
+  try{await ensurePdfLibs();const res=await PDFIMP.readPdf(f,st=>{PDFST.msg=st.stage==='load'?'تحميل محرك القراءة (مرة واحدة)...':st.stage==='prep'?'تحضير الصفحة '+st.page+' من '+st.total+'...':'قراءة الصفحة '+st.page+' من '+st.total+'...';render()},{base:''});
+   PDFST.busy=false;PDFST.pages=res.pages;PDFST.mode=res.pages.some(p=>p.mode==='ocr')?'ocr':'text';pdfAutoSel(res.pages);
+   const nn=res.pages.reduce((s,p)=>s+p.rows.filter(r=>r.vals.length).length,0);PDFST.msg=nn?'تمت قراءة '+res.numPages+' صفحة. راجع الجدول أدناه ثم اعتمد.':'لم أجد أرقاماً في الملف.';PDFST.err=!nn}
+  catch(x){PDFST.busy=false;PDFST.err=true;PDFST.msg='تعذرت قراءة الملف: '+(x&&x.message||x)}
+  r=true}
+ else if(d.pdfpg!==undefined){PDFST.sel[d.pdfpg]=t.checked;r=true}
+ else if(d.pdfcol!==undefined){PDFST.col[d.pdfcol]=+t.value;r=true}
+ else if(d.pdfmap!==undefined){PDFST.map[d.pdfmap]=t.value;r=true}
+ else if(d.pdfval!==undefined){PDFST.val[d.pdfval]=t.value;r=true}
  else if(d.act==='restore'){const f=t.files[0];if(!f)return;try{S=Object.assign(blank(),JSON.parse(await f.text()));S.sp=Object.assign({n:10,key:0,seed:1,method:'rnd',inc:false},S.sp||{});S.open=S.open||{};S.gl=S.gl||[];glDirty=true;ensureGL();r=true}catch(x){alert('ملف غير صالح')}}
  else return;
  save();if(r)render();else $('nav').lastChild.textContent=saveMsg});
