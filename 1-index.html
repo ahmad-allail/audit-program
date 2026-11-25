@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>برنامج المراجعة - جمعيات خيرية</title>
+<style>
+*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;background:#f3f5f8;color:#1b2430;font-size:15px}
+header{background:#143a5c;color:#fff;padding:10px 14px;position:sticky;top:0;z-index:5}
+header b{font-size:17px}header small{opacity:.8;margin-inline-start:8px}
+nav{display:flex;gap:4px;overflow-x:auto;background:#fff;border-bottom:1px solid #d5dbe3;position:sticky;top:44px;z-index:4;padding:4px}
+nav button{white-space:nowrap;border:0;background:#eef2f6;padding:9px 12px;border-radius:6px;font:inherit;cursor:pointer}
+nav button.on{background:#143a5c;color:#fff}
+main{padding:12px;max-width:1200px;margin:auto}
+.card{background:#fff;border:1px solid #d9dfe7;border-radius:8px;padding:12px;margin-bottom:12px}
+h2{margin:0 0 8px;font-size:17px}h3{margin:12px 0 6px;font-size:15px}
+label{display:block;font-size:13px;color:#4a5668;margin:6px 0 2px}
+input,select,textarea{font:inherit;padding:7px;border:1px solid #bcc6d3;border-radius:6px;width:100%;background:#fff}
+input[type=checkbox]{width:auto}
+textarea{min-height:110px;direction:ltr;text-align:left}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+button.b,label.b{background:#143a5c;color:#fff;border:0;padding:9px 14px;border-radius:6px;font:inherit;cursor:pointer;margin:3px;display:inline-block;font-size:15px}
+.b.s{background:#5b6b7e}.b.r{background:#a63a3a}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border:1px solid #d3d9e1;padding:5px 7px;text-align:right;vertical-align:top}
+th{background:#e8eef5}td.n,th.n{text-align:left;direction:ltr;white-space:nowrap}
+td input,td select{padding:4px;font-size:13px}td input.num,input.num{direction:ltr;text-align:left}
+tr.tot td{font-weight:bold;background:#f0f4f8}tr.hd td{font-weight:bold;background:#dde6f0}
+.ok{color:#117a3d;font-weight:bold}.bad{color:#b32222;font-weight:bold}.warn{color:#9a6200;font-weight:bold}
+.note{font-size:13px;color:#4a5668}
+.fs{background:#fff;padding:14px;border:1px solid #cfd6df;margin-bottom:14px;overflow-x:auto}
+.fs h4{text-align:center;margin:2px}.fs p.t{text-align:center;margin:2px 0}
+.un{background:#fff3cd}
+@media print{header,nav,.noprint,.card{display:none!important}body{background:#fff}main{padding:0}.fs{border:0;page-break-after:always}}
+</style></head><body>
+<header><b>برنامج المراجعة</b><small>جمعيات ومؤسسات غير ربحية · البيانات تبقى في جهازك فقط</small></header>
+<nav id="nav"></nav><main id="main"></main>
+<script>
+const NOTES=["(2) إيضاح : أسس الإعداد", "بيان الإلتزام", "تم عرض القوائم المالية للجمعية والافصاح عنها وفقا لمعايير المنشأت غير الهادفة للربح المعتمدة في المملكة العربية السعودية. وتطبيق متطلبات الإثبات والقياس الواردة في المعيار الدولي للتقرير المالي للمنشأت الصغيرة ومتوسطة الحجم والإصدارات الأخرى المعتمدة من الهيئة السعودية للمراجعين والمحاسبين فيما لم يتم معالجته في معايير المنشأت غير الهادفة للربح المعتمدة في المملكة العربية السعودية.", "(1/2) عملة العرض", "تم عرض القوائم المالية بالريال السعودي، والذي يعتبر العملة الوظيفية والعملة التي يتم بها عرض القوائم المالية، تم تقريب كافة المبالغ لأقرب ريال سعودي، ما لم يرد خلاف ذلك.", "إستخدام الحكم والتقديرات", "يتطلب إعداد القوائم المالية من إدارة الجمعية إجراء أحكام وتقديرات وافتراضات تؤثر علي تطبيق السياسات المحاسبية ومبالغ الأصول والألتزامات والإيرادات والمصروفات. وتستند التقديرات والإفتراضات المتعلقة بها إلى الخبرة الشخصية المتوفرة بالجمعية وعوامل اخرى مختلفة يعتقد أنها معقولة في ظل الظروف التي ينتج عنها أساس إصدار الأحكام حول القيم الدفترية للأصول والإلتزامات التي لاتظهر بسهولة عن غيرها من المصادر. وبالتالي قد تختلف النتائج الفعلية عن تلك التي بنيت على أساسها التقديرات. وتتم مراجعة التقديرات والإفتراضات الأساسية بشكل مستمر ويتم الأعتراف بالتعديلات علي التقديرات المحاسبية في الفترة التي يتم فيها مراجعة التقديرات إذا كان التعديل يؤثر على كل الفترات الحالية والمستقبلية.", "تصنيف الأصول والالتزامات كمتداولة وغير متداولة", "تعد الأصول متداولة عندما:", "1- يتوقع تحققها أو ينوى بيعها أو إستنفادها خلال دورة العمليات العادية.\n2- في حالة إقتنائها بشكل أساس لأغراض المتاجرة.\n3- يتوقع تحققها خلال إثني عشر شهراً بعد الفترة المالية.\n4- تكون نقدية وشبه نقدية ما لم تكن هناك قيود على إستبدالها أو إستخدامها لسداد أي مطلوبات لمدة لا تقل عن اثني عشر شهراً بعد الفترة المالية.", "تصنف الجمعية الأصول الأخرى كافة كـ \"غير متداولة\".", "(2)  أسس الإعداد (تتمة)", "تصنيف الأصول والالتزامات كمتداولة وغير متداولة (تتمة)", "تعد كافة الالتزامات متداولة عندما :", "1- يتوقع سدادها خلال دورة العمليات العادية.\n2- في حالة اقتنائها بشكل أساس لأغراض المتاجرة.\n3- تستحق السداد خلال اثني عشر شهراً بعد الفترة المالية.\n4- عند عدم وجود حق غير مشروط لتأجيل سداد الالتزامات لمدة لا تقل عن اثني عشر شهراً بعد الفترة المالية.", "تصنف الجمعية الالتزامات الأخرى كافة كـ غير متداولة\".", "عرض فئات الأصول إلى غير مقيدة ومقيدة", "الأصول غير المقيدة", "هي الأصول التي لا تخضع لقيود من جانب المتبرع وبذلك هي تحت السيطرة الكاملة لإدارة الجمعية.", "الأصول المقيدة", "هي الأصول التي تخضع لقيود من جانب المتبرع، حيث تمثل المعلومات المتعلقة بالقيود المفروضة على الأصول أو فئات من صافي الأصول وتأثير ذلك على أصول أو التزامات معينة مهمة لأجل تقييم المرونة المالية للجمعية. وتصنف الجمعية تلك القيود بقيود استخدام أو قيود وقت أو قيود استخدام ووقت معا أو قيود مفروضة على استخدام أصول الأوقاف لأغراض معينة وللمحافظة عليها ولاستثمارها من أجل توفير مصدر دائم للدخل. قد تكون القيود مفروضة من المتبرع. وقد تكون القود ذاتية تقرضها إدارة الجمعية مع ضرورة الإفصاح حال رفع تلك القيود سواء نتيجة الوفاء بمتطلبات المتبر أو برفعها ذاتيا أو بانتهاء الاستخدام أو الوقت المحدد.", "أنشطة الجمعية", "تقوم الجمعية بإعداد قائمة للأنشطة في نهاية الفترة المالية والتي تتضمن الإيرادات والمصروفات والمكاسب والخسائر، والتحويلات بين فئات الأصول بوصفها تغيرات في صافي الأصول بتفاصيلها المتضمنة التغير في صافي الأصول غير المقيدة، والتغير في صافي الأصول المقيدة، والتغير في صافي أصول الأوقاف. وتقوم الجمعية بإظهار التغيرات في صافي الأصول في قائمة مالية واحدة بحيث توضح الدخل الشامل الناتج من العمليات المستمرة للجمعية أو غير المستمرة والذي يمثل صافي التغير خلال الفترة ثم يتم إضافة عناصر الدخل الشامل الأخر إن وجدت والتي تم تحديدها في المعيار الدولي للتقرير المالي للمنشآت الصغيرة ومتوسطة الحجم المعتمدة في المملكة العربية السعودية.", "صافي الأصول", "تعرض الجمعية بنود مجموعة صافي الأصول في صلب قائمة المركز المالي بصورة مستقلة وفقا للترتيب التالي بداية بصافي الأصول غير المقيدة ثم صافي الأصول المقيدة ثم صافي أصول الأوقاف إن وجدت. وتقوم الجمعية بتعديل صافي الأصول بحسب التغيرات المختلفة التي تؤثر عليها.", "التغيرات في صافي الأصول:", "تعرض الجمعية في قائمة الأنشطة التغيرات في صافي الأصول غير المقيدة والتغيرات في صافي الأصول المقيدة والتغيرات في صافي أصول الأوقاف (إن وجدا) بما تؤديه بنود الدخل والمصروفات والتحويلات وإعادة التصنيف إلى زيادة صافي الأصول أو تخفيضها. وتقوم الجمعية بعرض التغيرات في صافي الأصول على أساس وظيفي طبقا للأنواع المختلفة من البرامج المقدمة والأنشطة المساندة في صلب قائمة الأنشطة او الإفصاح عنها في إيضاحات قوائم الجمعية المالية المرفقة. حيث يجب إظهار التغيرات في صافي الأصول في قائمة مالية واحدة شاملة للأنشطة بحيث تعرض مكونات التغيرات في صافي الأصول بصورة مستقلة قدر الإمكان مثل التغيرات من العمليات المستمرة أو العمليات غير المستمرة والذي يمثل مجموعهما التغيرات خلال الفترة والذي يضاف إليه الدخل الشامل الآخر إن وجد ليمثل المجموع لدخل الشامل للجمعية.", "الذمم المدينة:", "تثبت الذمم المدينة بصافي قيمتها القابلة للتحقق بعد أخذ مخصص كافي للديون المشكوك في تحصيلها , وتخصم الديون المعدومة عند تكبدها .", "المخـــــزون الســـــلعى :-", "(أ) المخزون من البضاعة المتبرع بها للجمعية والتى لم تُصرف حتى تاريخ القوائِم المالية يتم إثباتها بسعر تقييمها عند إستلامها.", "(ب) المخزون من البضاعة المشتراه يتم إثباتها على أساس التكلفة الفعلية وطبقاً لطريقة الوارد أولاً يُصرف أولاً وذلك بالنسبة للمواد الغذائية والأدوية .", "التغيرات في صافي الأصول (تتمة)", "التغيرات في صافي الأصول غير المقيدة", "يمثل التغير في صافي الأصول غير المقيدة عن مقدار الزيادة أوالنقص في كل الإيرادات والمصروفات أوالمكاسب والخسائر التي لا تعتبر تغيرات في أصول مقيدة أو أوقاف وكذلك التحويلات وإعادة التصنيف من وإلى فئات صافي الأصول الأخرى نتيجة رفع القيود.", "(3) السياسات المحاسبية الجوهرية", "تم إعداد القوائم المالية المرفقة وفقاً للمعيار الدولي للتقريرالمالي للمنشأت غير الهادفة للربح وتطبيق متطلبات الإثبات والقياس الواردة في المعيار الدولي للتقرير المالي للمنشأت الصغيرة ومتوسطة الحجم والإصدارات الأخرى المعتمدة من الهيئة السعودية للمراجعين والمحاسبين.", "النقذ ومافي حكمها", "يتكون النقد وما في حكمه من النقد في الصندوق ولدى البنوك وودائع لأجل تستحق خلال ثلاثة أشهر أو أقل من تاريخ الاقتناء وقابلة للتحويل إلى مبالغ نقدية معروفة، وتخضع لمخاطر غير جوهرية بشأن التغيرات في القيمة. وتقوم الجمعية بالتقرير بشكل منفصل عن النقد والمطالبات بالنقد التي تستوفي التقييد في السحب أو الاستخدام بخلاف العمليات التشغيلية أو المحتفظ به مؤقتا لحين العثور على فرص استثمارية أو المقيد لتغطية النفقات المتعلقة باقتناء أو إنشاء أصول غير متداولة وكذلك النقد المطلوب عزله لتصفية الديون طويلة الأجل أو النقد المقيد لاستخدام طويل الأجل مفروض من المتبرعين أو بموجب اتفاقيات الديون أو التي تم تجنبيها لمقابلة تكوين احتياطيات مشترطة نظاما إن وجدت أو قيود بموجب ترتيبات ضمانات إضافية أو مقيدة لاستخدامات طويلة أجل بموجب قيود المتبرعين", "ممتلكات ومعدات", "تتمثل ممتلكات ومعدات الجمعية والتي تم إقتنائها بهدف إستخدامها في تسيرعمليات وأنشطة الجمعية وليس بغرض البيع.", "تقيد الممتلكات والمعدات بالتكلفة مضافا اليها كافة المصاريف الآزمة لجعل الأصل الثابت جاهز للأستخدام، وتظهر بالتكلفة ناقصا  الإستهلاك المتراكم و أي إنخفاض في القيمة، تستهلك التكلفة ناقصا القيمة التقديرية المتبقية بطريقة القسط الثابت علي مدى الأعمار الإنتاجية المقدرة للموجودات كمايلي:", "مباني                                             4% | سيارات                                       20%", "أجهزة وعدد                                     15% | اثاث ومفروشات                              10%", "برامج                                          10% | متجر الكتروني                               10%", "الإنخفاض في قيمة الموجودات", "تقوم الجمعية بتاريخ كل قائمة مركز مالي بمراجعة قيم ممتلكاتها ومعداتها للتأكد من عدم وجود مؤشر يدل على إنخفاض في قيمة تلك الموجودات، وفي حالة وجود هذا المؤشر يتم تحديد القيمة المقدرة للإستدراك لتلك الموجودات للتوصل إلى قيمة الإنخفاض في الموجودات ( إن وجدت )، وفي حالة عدم القدرة على تقدير القيمة القابلة للإستدراك لقيم إحدى الموجودات، تقوم الجمعية بتقدير القيمة القابلة للإستدراك لكامل الوحدة الإنتاجية التي يعود إليها ذلك الأصل.", "يتم تخفيض القيمة الدفترية للأصل لتساوي قيمته المقدرة للإسترداد في حالة أن الأصل أقل من قيمته الدفترية. يتم تسجيل الخسارة الناتجة عن التخفيض في قيمة الأصل كمصروف فور حدوثه، عند عكس قيمة الإنخفاض في الأصل في السنة اللآحقة ويتم تعديل القيمة الدفترية للأصل بزيادتها إلى القيمة المقدرة للإسترداد المعدلة بشرط ألا تتعدى هذه الزيادة القيمة الدفترية للأصل في السنوات السابقة، يتم إثبات قيمة العكس في خسارة التخفيض كإيراد عند حدوثه.", "السياسات المحاسبية الجوهرية (تتمة)", "أصول الأوقاف", "يتم فصل الأصول الوقفية في مجموعة خاصة نظرا لخصوصية أصول الأوقاف الشرعية والتي تقضي باستخدام هذة الأصول في أغراض محددة سابقا تم اثباتها في صكوك الوقفية والتي ينبغي الألتزام بها بالإضافة الي ضرورة المحافظة على هذه الأصول الوقفية والعناية بها واستثمارها بما يحقق أهداف الواقف ويعود بالنفع على المستفدين من عوائد وإيرادات هذه الأوقاف.", "الدائنون التجاريون والمبالغ المستحقة الدفع والدائنون الأخرون", "يتم اثبات الإلتزامات مقابل المبالغ الواجب دفعها في المستقبل عن البضاعة أو الخدمات المستلمة، سواء قدمت أم لم تقدم بها فواتير من قبل الموردين. الذمم الدائنة التجارية هي عبارة عن التزامات بسداد قيمة البضائع أو الخدمات التي يتم الحصول عليها في سياق العمل الأعتيادي من الموردين، يتم تصنيف الذمم الدائنة التجارية كمطلوبات متداولة اذا كانت هذة الذمم مستحقة السداد خلال سنة واحدة أو اقل، وإلاّ يتم عرضها كمطلوبات غير متداولة ويتم اثبات الذمم الدائنة مبدئيا بسعر المعاملة.", "مكافأة نهاية الخدمة :-", "يجنب مخصص لمكافأة نهاية الخدمة المستحقة للموظفين عن فترات خدمتهم المتجمعة بتاريخ قائمة المركز المالي وفقا لإحكام نظام العمل و العمال في المملكة العربية السعودية.", "الاستثمارات المالية :-", "تقوم الجمعية بتسجيل أستثماراتها بموجب التكلفة الفعلية عند أقتنائها ولا يتم إثبات الايرادات الخاصة بها إلا عند أستلامها فعليا .", "ضريبة القيمة المضافة:-", "تقوم الجمعية بتسجيل الضريبة على مشترياتها تمهيدا لاستردادها من قبل الزكاة والضريبة والجمارك حسب التعامم الواردة بهذا الخصوص من وزارة الموارد البشرية والقرارات والإجراءات ذات الصلة من هيئة الزكاة والضريبة والجمارك وذلك حال قبولها كمنشاه قابلة للاسترداد بسبب النشاط", "قائمة الأنشطة", "تم عرض المعلومات عن الإيرادات والمصروفات على الأساس الوظيفي، طبقا للأنواع المختلفة من البرامج المقدمة، و الأنشطة المساندة.", "أ- الاعتراف بالإيرادات و التبرعات", "تعد التبرعات تحويلات غير مشروطة الأصول، سواء أكان ذلك في صورة نقدية، أو في صورة أصول أخرى إلى جهة ما، أو تعد سدادا او إسقاطا لما عليها من التزامات، من خلال عملية غير تبادلية تتم طوعا من قبل جهة أخرى. و يتم تصنيف التبرعات التي  تتسلمها الجمعية من قبل المتبرعين الى تبرعات مقيدة و تبرعات غير مقيدة وتبرعات أوقاف طبقا لطبيعة و شروط المتبرعين.", "يجب قياس التبرعات بالقيمة العادلة و يتم الاعتراف بالتبرعات عند توافر الشروط التالية:", "عندما تتمتع الجمعية بسلطة إدارة التبرع أو التصرف فيه بأي شكل من أشكال التصرف بما يسمح لها تحديد كيفية الإستخدام في المستقبل.", "أن تتوقع الجمعية الحصول على التبرع بدرجة معقولة من الثقة", "أن يكون التبرع قابلاً للقياس بدرجة معقولة من الموضوعية .", "وبناء على الشروط المذكورة اعلاه ، تكون سياسة اثبات إيرادات مصادر التبرعات المختلفة كما يلي :", "التبرعات النقدية", "يتم فيد ما يتلقىي من تبرعات نقدية في الفترة التي تتسلم فيها الجمعية تلك التبرعات.", "التبرعات العينية بغرض إعادة بيعها أو توزيعها", "يتم قيد التبرعات العينية بالقيمة القابلة للتحقق في الفترة المحاسبية التي تم الاستلام فيها وعند تعذر الوصول إلى القيمة القابلة للتحقق لتلك السلع فانه يجب تأجيل الاعتراف بتلك التبرعات إلى حين بيعها.", "التبرعات العينية - أصول بغرض إستخدامها", "يتم الاعتراف بها كتبرعات بالقيمة العادلة في قائمة الأنشطة، و ضمن مجموعات الأصول المناسبة في قائمة المركز المالي.", "الخدمات التطوعية", "يتم إثبات ما تستقبله الجمعية من تبرعات في صورة خدمات تطوعية أو تجهيزات أو منافع أو مرافق ضمن التبرعات وذلك عند إمكانية قياسها بحيث تعكس القيمة المقدرة لتلك التبرعات، القيمة العادلة لتلك الخدمات أو المنافع أو التجهيزات.", "السياسات المحاسبية الجوهرية (تتمة)", "التعهد بتقديم تبرع", "يتم الاعتراف بالتعهد بتقديم تبرع في القوائم المالية، عند توافر دليل مقنع في صورة مستندات، أو أي وسائل ثبوتية أخرى يمكن التحقق من صحتها، تؤكد وجود التعهد. و بعد الإتفاق، الذي لا يشير بوضوح إلى كونه يمثل تعهدا؛ تعهدا غير مشروط بتقديم تبرع في حال إشتمال الاتفاق على نية غير مشروطة، مشمولة النفاذ نظاما، بتقديم تبرع.", "المنح الحكومية", "تتسلم الجمعية منح حكومية من وزارة المراد البشرية ويتم الإعتراف بها وفقا لمسارات المنح التي تعتمدها الوزارة و الشروط المرتبطة بها.", "الإيرادات التشغيلية الأخرى", "يتم الإعتراف بها عند تحققها من خلال تقديم خدمة أو بيع سلعة وفقا للإلتزامات المحددة مسبقاً بين الطرفين.", "إيرادات التحويلات وإعادة التصنيف", "يمثل عملية المناقلة و التحويل بين الحسابات المقيدة وغير المقيدة نتيجة رفع القيود من قبل المتبرع، أو انقضاء القيد بمرور الوقت  أو إستيفاء القيود من قبل الجمعية.", "ب المصروفات والمساعدات", "مصروفات الانشطة:", "تتمثل مصروفات الأنشطة في المصروفات الناتجة عن مجهودات الجمعية في اداء وظيفتها الاجتماعية و التي تمثل النشاط الرئيسي للجماعة", "المساعدات النقدية", "تتمثل في مصروفات المساعدات النقدية المقدمة للمحتاجين و يتم تسجيلها فور سدادها لمستحقيها او استحقاقها.", "مصروفات المنح الحكومية", "تمثل مصروفات البرامج والانشطة الممولة و المدعومة من المنح الحكومية التي تعتمدها وزارة الموارد البشرية.", "مصروفات جمع الأموال", "مصروفات التسويق وتنمية الموارد المالية و جمع التبرعات بشكل مباشر أو يتم تحميلها باتباع اسس تحميل عائلة ومعتمدة من أصحاب الصلاحية.", "مصروفات الحوكمة", "تخص مصروفات مجلس الادارة ومعتمدة من اصحاب الصلاحية.", "قائمة التدفقات النقدية:", "يتم إعداد قائمة التدفقات النقدية وفقا للطريقة غير المباشرة ولأغراض إعداد قائمة التدفقات النقدية تتمثل النقدية ومافى حكمها في أرصدة النقدية بالصندوق والحسابات الجارية."];
+const KEY='auditApp2';
+const LN=[
+['cash','النقد لدى البنوك','A','',1],['recv','الذمم المدينة وأرصدة مدينة أخرى','A','',1],['prepaid','مصاريف مدفوعة مقدماً','A','',1],['inv','المخزون','A','',1],
+['invest','استثمارات طويلة الأجل','A','',2],['ppe','صافي الأصول الثابتة','A','',3],['intang','صافي الأصول غير الملموسة','A','',3],['invprop','صافي الأصول الاستثمارية','A','',3],
+['e_cash','النقدية الموقوفة (أوقاف)','A','',4],['e_ppe','صافي الأصول الثابتة الوقفية','A','',4],['e_cip','مشروعات تحت التنفيذ (أوقاف)','A','',4],
+['accr','مصاريف مستحقة','L','',1],['otherpay','دائنون وأرصدة دائنة أخرى','L','',1],['eosb','مخصص نهاية الخدمة','L','',2],['loan','قرض حسن / قروض طويلة الأجل','L','',2],
+['na_u','صافي الأصول غير المقيدة','NA','U',0],['na_r','صافي الأصول المقيدة','NA','R',0],['na_e','صافي أصول الأوقاف','NA','E',0],
+['r_rest','التبرعات النقدية المقيدة','R','R',0],['r_gen','التبرعات النقدية العامة','R','U',0],['r_sub','اشتراكات','R','U',0],['r_gov','منح وإعانات حكومية','R','R',0],['r_ink','تبرعات عينية','R','U',0],
+['r_end','إيرادات الأوقاف','R','E',0],['r_vol','خدمات تطوعية','R','U',0],['r_inv','أرباح استثمارات','R','U',0],['r_sale','إيرادات مبيعات وأنشطة','R','U',0],['r_gain','مكاسب بيع أصول','R','U',0],['r_oth','إيرادات أخرى','R','U',0],['r_prior','إيرادات سنوات سابقة','R','U',0],
+['x_prog','مصاريف البرامج والأنشطة','X','U',0],['x_ink','مساعدات عينية','X','U',0],['x_cash','مساعدات نقدية','X','U',0],['x_end','مصاريف أوقاف','X','E',0],['x_zakat','الزكاة','X','U',0],['x_fund','مصاريف جمع الأموال','X','U',0],['x_vol','مصاريف خدمات تطوعية','X','U',0],
+['x_dep','إهلاك الأصول الثابتة','X','U',0],['x_depi','إهلاك الأصول الاستثمارية','X','U',0],['x_am','إطفاء الأصول غير الملموسة','X','U',0],['x_ga','المصاريف العمومية والإدارية','X','U',0],['x_prior','مصروفات وتسويات سنوات سابقة','X','U',0]
+].map(a=>({id:a[0],ar:a[1],sec:a[2],cls:a[3],grp:a[4]}));
+const L=Object.fromEntries(LN.map(l=>[l.id,l]));
+const SECN={A:'الأصول',L:'الالتزامات',NA:'صافي الأصول (أرصدة أول المدة)',R:'الإيرادات والمكاسب',X:'المصروفات والخسائر'};
+const CLS={U:'غير مقيدة',R:'مقيدة',E:'أوقاف'};
+let S=load();
+function blank(){return{client:{name:'',reg:'',region:'',year:new Date().getFullYear(),mode:'first',appr:''},tb:[],map:{},prior:{},pcf:{op:0,inv:0,fin:0,cash0:0},reclass:0,pbc:{},ledgers:{},samples:{},pm:0,gl:[],open:{},sp:{n:10,key:0,seed:1,method:'rnd',inc:false}}}
+function load(){try{const o=Object.assign(blank(),JSON.parse(localStorage.getItem(KEY)||'{}'));try{o.gl=JSON.parse(localStorage.getItem(KEY+'gl')||'[]')}catch(e){o.gl=[]}o.sp=Object.assign({n:10,key:0,seed:1,method:'rnd',inc:false},o.sp||{});o.open=o.open||{};return o}catch(e){return blank()}}
+let saveMsg='';
+function save(){RC=null;try{localStorage.setItem(KEY,JSON.stringify(Object.assign({},S,{gl:[]})));saveMsg='تم الحفظ تلقائياً';if(glDirty){try{localStorage.setItem(KEY+'gl',JSON.stringify(S.gl));glDirty=false}catch(e){saveMsg='دفتر الأستاذ كبير ولم يُحفظ في المتصفح، خذ نسخة احتياطية'}}}catch(e){saveMsg='تعذر الحفظ في المتصفح'}}
+let tab='client';
+const TABS=[['client','بيانات العميل'],['tb','ميزان المراجعة'],['prior','القوائم السابقة'],['pbc','قائمة الطلبات'],['led','كشوف الحسابات والعينات'],['fs','القوائم المالية (مسودة)'],['chk','فحوصات']];
+const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function num(s){if(typeof s==='number')return isFinite(s)?s:0;let t=String(s==null?'':s).trim();if(!t)return 0;
+ t=t.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/٫/g,'.').replace(/[,٬\s]|ر\.?س|SAR/gi,'');
+ let neg=false;if(/^\(.*\)$/.test(t)){neg=true;t=t.slice(1,-1)}if(/-$/.test(t)){neg=true;t=t.slice(0,-1)}
+ if(/^-/.test(t)){neg=!neg;t=t.slice(1)}if(!/^[0-9]*\.?[0-9]+$|^[0-9]+\.$/.test(t))return NaN;return neg?-parseFloat(t):parseFloat(t)}
+const isNum=s=>{const t=String(s==null?'':s).trim();return t!==''&&!isNaN(num(t))};
+function fm(v,z){v=Math.round(v||0);if(v===0)return z?'-':'0';const s=Math.abs(v).toLocaleString('en-US');return v<0?'('+s+')':s}
+function norm(s){return String(s||'').replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/ؤ/g,'و').replace(/ئ/g,'ي').toLowerCase().trim()}
+let uid=0;const nid=()=>'a'+Date.now().toString(36)+(uid++);
+function suggest(name){const n=norm(name),w=n.includes('وقف')||n.includes('اوقاف');
+ const t=r=>new RegExp(r).test(n);
+ if(t('مجمع')&&t('(اهلاك|استهلاك|اطفاء|استنفاد)')){if(w)return'e_ppe';if(t('(برمج|رخص|موقع|متجر|ملموس|اطفاء|استنفاد)'))return'intang';if(t('(استثمار|عقار)'))return'invprop';return'ppe'}
+ if(t('(اهلاك|استهلاك)')&&!t('مجمع'))return t('استثمار')?'x_depi':'x_dep';
+ if(t('(اطفاء|استنفاد)'))return'x_am';
+ if(t('تحت التنفيذ'))return w?'e_cip':'ppe';
+ if(t('نهايه الخدمه')&&t('مخصص'))return'eosb';
+ if(t('^(صافي الاصول|رصيد اول|ارباح مبقاه|فائض|عجز|راس المال|احتياطي|الاصول)'))return t('غير ?(ال)?مقيد')?'na_u':t('مقيد')?'na_r':w?'na_e':'na_u';
+ if((t('^(تبرع|ايراد|اشتراك|منح|اعان|هبات|هبه|صدقات|دعم)')||t('ايرادات'))&&!t('مستحق|مقدم')){
+   if(w||t('ايراد.*(وقف|اوقاف)'))return'r_end';if(t('عيني'))return'r_ink';if(t('تطوع'))return'r_vol';if(t('اشتراك'))return'r_sub';if(t('(منح|اعان|وزار)'))return'r_gov';
+   if(t('(مقيد|كفال|زكاه|صدقات|اضاح|سقيا|ايتام|طالب|مشروع)'))return'r_rest';if(t('تبرع'))return'r_gen';if(t('(استثمار|ارباح)'))return'r_inv';if(t('(مبيعات|مستودع)'))return'r_sale';return'r_oth'}
+ if(t('مستحق')&&t('ايراد'))return'recv';
+ if(t('(مدفوعه مقدما|مصروفات مدفوعه)'))return'prepaid';
+ if(t('مستحق|مخصص|دائن|موردون|مورد|مقبوض مقدما|ايرادات مقدمه'))return(t('مستحق')&&!t('دائن|موردون|مورد'))?'accr':'otherpay';
+ if(t('(مصروف|مصاريف|مصروفات)')||t('^(مساعدات|كفاله|كسوه|رواتب|اجور|ايجار|كهرباء|هاتف|ضيافه|نظافه|وقود|اتعاب|دعايه|عمولات|رسوم|مستلزمات|مكافاه|بدل|قرطاسيه|صيانه)')){
+   if(t('جمع الاموال|تسويق التبرع'))return'x_fund';if(t('مساعدات? عينيه|عيني|سلال'))return'x_ink';if(t('(مساعدات|كفاله|كسوه|اضاح|تفريج|سداد ايجار|زواج)'))return'x_cash';
+   if(w)return'x_end';if(t('زكاه'))return'x_zakat';if(t('سنوات سابقه'))return'x_prior';if(t('تطوع'))return'x_vol';
+   if(t('(برامج|انشطه|سقيا|مساجد|عمره|حج|مبادر|فعاليات|مشروع)'))return'x_prog';return'x_ga'}
+ if(t('مستحق|مخصص|دائن|موردون|مورد|مقبوض مقدما|ايرادات مقدمه'))return(t('مستحق')&&!t('دائن|موردون|مورد'))?'accr':'otherpay';
+ if(t('(قرض|تمويل)'))return'loan';
+ if(t('(مدفوعه مقدما|مصروفات مدفوعه|مقدما)'))return'prepaid';
+ if(t('(مخزون|بضاعه)'))return'inv';
+ if(w&&t('(نقد|بنك|مصرف|راجح)'))return'e_cash';if(w&&t('(اراضي|مبني|مباني|تحسينات|الات|معدات)'))return'e_ppe';
+ if(t('عقار|اراضي|مباني|مبنى'))return w?'e_ppe':'invprop';
+ if(t('(استثمار|اسهم|صكوك)'))return'invest';
+ if(t('(سيارات|سياره|اثاث|اجهزه|الات|معدات|حاسب|عدد|تحسينات|اصول ثابته|مفروشات)'))return'ppe';
+ if(t('(برمج|موقع|متجر|رخص|ملموس)'))return'intang';
+ if(t('(ذمم|عهد|سلف|مدين|ضريبه القيمه|قيمه مضافه|تامينات|ايراد)'))return'recv';
+ if(t('(صندوق|بنك|مصرف|راجح|اهلي|البلاد|الانماء|نقد|حساب جاري|محفظ)'))return'cash';
+ return''}
+function amt(a){return(num(a.dr)||0)-(num(a.cr)||0)}
+function calc(){const c={cur:{},act:{},accs:{},unm:[],td:0,tc:0};
+ LN.forEach(l=>{c.cur[l.id]=0;c.act[l.id]={U:0,R:0,E:0};c.accs[l.id]=[]});
+ S.tb.forEach(a=>{if(a.par)return;c.td+=num(a.dr)||0;c.tc+=num(a.cr)||0;const m=S.map[a.id];if(!m||!m.line||!L[m.line]){c.unm.push(a);return}
+  const l=L[m.line],net=amt(a),v=(l.sec==='A'||l.sec==='X')?net:-net;c.cur[l.id]+=v;c.accs[l.id].push({a,v});
+  if(l.sec==='R'||l.sec==='X'){c.act[l.id][m.cls||l.cls]+=v}});
+ const P=id=>S.client.mode==='prior'?(num(S.prior[id])||0):0;c.P=P;
+ const sum=(sec,cl)=>LN.filter(l=>l.sec===sec).reduce((s,l)=>s+(cl?c.act[l.id][cl]:c.cur[l.id]),0);
+ c.rev={};c.exp={};c.chg={};['U','R','E'].forEach(k=>{c.rev[k]=sum('R',k);c.exp[k]=sum('X',k)});
+ const rc=num(S.reclass)||0;c.rc=rc;
+ c.chg={U:c.rev.U-c.exp.U+rc,R:c.rev.R-c.exp.R-rc,E:c.rev.E-c.exp.E};c.chgT=c.chg.U+c.chg.R+c.chg.E;
+ c.naO={U:c.cur.na_u,R:c.cur.na_r,E:c.cur.na_e};c.naC={U:c.naO.U+c.chg.U,R:c.naO.R+c.chg.R,E:c.naO.E+c.chg.E};
+ c.naP={U:P('na_u'),R:P('na_r'),E:P('na_e')};c.naD={U:c.naO.U-c.naP.U,R:c.naO.R-c.naP.R,E:c.naO.E-c.naP.E};
+ c.totA=sum('A');c.totL=sum('L');c.totNA=c.naC.U+c.naC.R+c.naC.E;c.diff=c.totA-c.totL-c.totNA;
+ c.pA=LN.filter(l=>l.sec==='A').reduce((s,l)=>s+P(l.id),0);c.pL=LN.filter(l=>l.sec==='L').reduce((s,l)=>s+P(l.id),0);c.pNA=c.naP.U+c.naP.R+c.naP.E;
+ c.pRev=LN.filter(l=>l.sec==='R').reduce((s,l)=>s+P(l.id),0);c.pExp=LN.filter(l=>l.sec==='X').reduce((s,l)=>s+P(l.id),0);
+ const d=id=>c.cur[id]-P(id),F={};
+ F.chg=c.chgT;F.adj=c.naD.U+c.naD.R+c.naD.E;F.dep=c.cur.x_dep;F.depi=c.cur.x_depi;F.am=c.cur.x_am;F.eosb=d('eosb');
+ F.recv=-d('recv');F.prepaid=-d('prepaid');F.inv=-d('inv');F.accr=d('accr');F.otherpay=d('otherpay');
+ F.op=F.chg+F.adj+F.dep+F.depi+F.am+F.eosb+F.recv+F.prepaid+F.inv+F.accr+F.otherpay;
+ F.ppe=-(d('ppe')+F.dep);F.intang=-(d('intang')+F.am);F.invprop=-(d('invprop')+F.depi);F.invest=-d('invest');F.e_ppe=-d('e_ppe');F.e_cip=-d('e_cip');
+ F.ivs=F.ppe+F.intang+F.invprop+F.invest+F.e_ppe+F.e_cip;F.fin=d('loan');F.net=F.op+F.ivs+F.fin;
+ F.c0=P('cash')+P('e_cash');F.c1=F.c0+F.net;F.act=c.cur.cash+c.cur.e_cash;F.chk=F.c1-F.act;c.F=F;
+ return c}
+function splitLine(l){const sep=l.includes('\t')?'\t':(l.split(';').length>2?';':',');const out=[];let cur='',q=false;
+ for(const ch of l){if(ch==='"'){q=!q}else if(ch===sep&&!q){out.push(cur);cur=''}else cur+=ch}out.push(cur);return out.map(s=>s.trim())}
+function parseTB(text){const rows=text.split(/\r?\n/).filter(l=>l.trim()).map(splitLine);let di=-1,ci=-1,ni=-1,ki=-1,bi=-1;const res=[];
+ let found=false;
+ for(let i=0;i<Math.min(rows.length,12)&&!found;i++){const r=rows[i].map(norm);const dd=lastIdx(r,x=>/(مدين|debit|^dr$)/.test(x)),cc=lastIdx(r,x=>/(دا[ئي]ن|credit|^cr$)/.test(x));
+  if(dd>=0&&cc>=0){di=dd;ci=cc;ni=r.findIndex(x=>/(اسم|بيان|حساب|account|name|description)/.test(x)&&!/(رقم|كود|رمز|code)/.test(x));ki=r.findIndex(x=>/(رقم|كود|رمز|code)/.test(x));rows.splice(0,i+1);found=true}}
+ for(let i=0;i<Math.min(rows.length,12)&&!found;i++){const r=rows[i].map(norm);
+  const bb=r.findIndex(x=>/^(الرصيد|رصيد|balance)/.test(x));if(bb>=0){bi=bb;ni=r.findIndex(x=>/(اسم|بيان|حساب|account|name)/.test(x)&&!/(رقم|كود|رمز)/.test(x));ki=r.findIndex(x=>/(رقم|كود|رمز|code)/.test(x));rows.splice(0,i+1);found=true}}
+ rows.forEach(r=>{let name='',code='',dr=0,cr=0;
+  if(di>=0){dr=num(r[di])||0;cr=num(r[ci])||0;name=r[ni>=0?ni:r.findIndex((x,j)=>j!==di&&j!==ci&&!isNum(x))]||'';code=ki>=0?r[ki]:''}
+  else if(bi>=0){const v=num(r[bi])||0;name=r[ni>=0?ni:r.findIndex((x,j)=>j!==bi&&!isNum(x))]||'';code=ki>=0?r[ki]:'';if(v>=0)dr=v;else cr=-v}
+  else{const nums=[];r.forEach((x,j)=>{if(isNum(x))nums.push(j)});const ti=r.findIndex(x=>x&&!isNum(x));name=r[ti]||'';
+   const after=nums.filter(j=>j>ti);if(after.length>=2){dr=num(r[after[after.length-2]]);cr=num(r[after[after.length-1]])}else if(after.length===1){const v=num(r[after[0]]);if(v>=0)dr=v;else cr=-v}
+   const before=nums.filter(j=>j<ti);code=before.length?r[before[0]]:''}
+  if(!name||TOT_RE.test(norm(name)))return;if(!dr&&!cr)return;
+  if(dr<0&&!cr){cr=-dr;dr=0}else if(cr<0&&!dr){dr=-cr;cr=0}
+  res.push({id:nid(),code,name,dr,cr})});return res}
+async function readXlsx(buf,all){const u=new Uint8Array(buf),dv=new DataView(buf);let e=u.length-22;while(e>0&&dv.getUint32(e,true)!==0x06054b50)e--;
+ const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const files={};const dec=new TextDecoder();
+ for(let i=0;i<n;i++){const meth=dv.getUint16(p+10,true),csz=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+  const name=dec.decode(u.subarray(p+46,p+46+nl));files[name]={meth,csz,lo};p+=46+nl+el+cl}
+ async function get(nm){const f=files[nm];if(!f)return null;const ln=dv.getUint16(f.lo+26,true),le=dv.getUint16(f.lo+28,true),st=f.lo+30+ln+le,data=u.subarray(st,st+f.csz);
+  if(f.meth===0)return dec.decode(data);const ds=new DecompressionStream('deflate-raw');const w=ds.writable.getWriter();w.write(data);w.close();return dec.decode(await new Response(ds.readable).arrayBuffer())}
+ const ss=[];const sx=await get('xl/sharedStrings.xml');if(sx){const d=new DOMParser().parseFromString(sx,'text/xml');d.querySelectorAll('si').forEach(si=>ss.push([...si.querySelectorAll('t')].map(t=>t.textContent).join('')))}
+ const sheets=Object.keys(files).filter(k=>/^xl\/worksheets\/sheet\d+\.xml$/.test(k));let best=[];const allSh=[];
+ const names={};try{const wb=await get('xl/workbook.xml'),rl=await get('xl/_rels/workbook.xml.rels');if(wb&&rl){const rd=new DOMParser().parseFromString(rl,'text/xml'),tg={};rd.querySelectorAll('Relationship').forEach(r=>tg[r.getAttribute('Id')]='xl/'+String(r.getAttribute('Target')).replace(/^\/?(xl\/)?/,''));const wd=new DOMParser().parseFromString(wb,'text/xml');[...wd.querySelectorAll('sheet')].forEach((sh,i)=>{const id=sh.getAttribute('r:id')||sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id');names[tg[id]]={n:sh.getAttribute('name'),i}})}}catch(x){}
+ for(const nmx of sheets){const sh=new DOMParser().parseFromString(await get(nmx),'text/xml');const lines=[];
+ sh.querySelectorAll('row').forEach(r=>{const cells=[];r.querySelectorAll('c').forEach(c=>{const ref=c.getAttribute('r')||'',col=ref.replace(/[0-9]/g,'');let ci=0;for(const ch of col)ci=ci*26+ch.charCodeAt(0)-64;ci--;
+  const t=c.getAttribute('t'),v=c.querySelector('v');let val='';if(t==='s'&&v)val=ss[+v.textContent]||'';else if(t==='inlineStr')val=c.textContent;else if(v)val=v.textContent;cells[ci]=val});
+  lines.push(Array.from(cells,x=>x==null?'':String(x).replace(/[\t\r\n]/g,' ')).join('\t'))});allSh.push({name:(names[nmx]||{}).n||nmx,ord:(names[nmx]||{i:999}).i,text:lines.join('\n')});if(lines.length>best.length)best=lines}
+ if(all)return allSh.sort((a,b)=>a.ord-b.ord);return best.join('\n')}
+const PB=[
+['عام','ترخيص الجمعية وشهادة التسجيل لدى المركز الوطني لتنمية القطاع غير الربحي، والنظام الأساسي، وقرار تشكيل مجلس الإدارة'],
+['عام','محاضر الجمعية العمومية ومجلس الإدارة واللجان للسنة ولما بعد تاريخ القوائم'],
+['عام','السياسات والإجراءات المالية ولائحة الصلاحيات والهيكل التنظيمي'],
+['عام','ميزان المراجعة النهائي بالأرصدة الافتتاحية وكشف حساب (دفتر أستاذ) لكل حساب'],
+['عام','الموازنة التقديرية المعتمدة والتقرير السنوي وتقارير الجهات الإشرافية والخطابات الرقابية'],
+['عام','الدعاوى والالتزامات المحتملة والارتباطات والأحداث اللاحقة وخطاب التمثيل من الإدارة'],
+['عام','شهادة الزكاة والضريبة والدخل وإقرارات ضريبة القيمة المضافة وشهادة التأمينات الاجتماعية']];
+const PBF={first:[['عام','وثائق التأسيس وبداية النشاط وإثبات الأرصدة الافتتاحية (إن وجدت) ومستنداتها']],prior:[['عام','القوائم المالية السابقة المعتمدة وتقرير المراجع السابق ومطابقة الأرصدة الافتتاحية معها'],['عام','أوراق عمل المراجع السابق وبنود التسويات المسجلة بعد الإقفال (إن وجدت)']]};
+const PBL={cash:['كشوف الحساب البنكية لكل حساب لـ 12 شهراً مع يناير التالي','مذكرات التسوية البنكية بتاريخ القوائم والبنود المعلقة','مصادقات البنوك المباشرة وكشف الصندوق ومحضر الجرد','تحديد الحسابات المقيدة وغير المقيدة وحسابات الأوقاف'],
+recv:['كشف أعمار الذمم والعهد بالأسماء مع التحصيل اللاحق','قيد ومستند العهد والذمم والمستندات','تسويات الذمم وإقرارات ضريبة القيمة المضافة'],
+prepaid:['كشف تحليلي بالمصاريف المقدمة مع العقود والفواتير وفترة الاستحقاق'],inv:['محضر جرد المخزون وقوائم الكميات والتكلفة وأسس تقييم التبرعات العينية','حركة المخزون الوارد والمنصرف ومستندات التوزيع'],
+invest:['شهادات ملكية الأسهم أو كشف المحفظة والقيمة السوقية وتوزيعات الأرباح'],
+ppe:['بيان الإهلاك موقع ومختوم مع قيد إضافة الأصول بالفواتير ومستندات الصرف','سجل الأصول وجرد فعلي وملكية السيارات وقرارات الاستبعاد'],
+intang:['قيد رسوم الموقع الإلكتروني أو البرامج مع المستندات الداعمة وعقود التراخيص'],invprop:['صكوك الملكية وعقود الإيجار وكشف الإيرادات والإهلاك'],
+e_cash:['كشوف حسابات الأوقاف وحجج الوقف وقرارات الناظر'],e_ppe:['حجج الوقف وصكوك الملكية وفواتير الإضافات وبيان الإهلاك'],e_cip:['عقود المقاولين والمستخلصات ومحاضر الاستلام وتراخيص البناء ونسب الإنجاز'],
+accr:['تحليل المصاريف المستحقة مع الفواتير والسداد اللاحق','قيد تأمينات اجتماعية مع الشهادة والمستندات مكتملة'],otherpay:['كشف الدائنين والموردين وأرصدة الإيرادات المقبوضة مقدماً مع المصادقات'],
+eosb:['كشف الموظفين والعقود وحساب مكافأة نهاية الخدمة لكل موظف'],loan:['عقد القرض أو القرض الحسن وجدول السداد والمصادقة'],
+na_u:['تحليل صافي الأصول غير المقيدة وأي تحويلات'],na_r:['تحليل الأرصدة المقيدة وشروط المتبرعين وقرارات رفع القيود'],na_e:['حجج الوقف وكشف حركة صافي أصول الأوقاف'],
+r_rest:['كشف المتبرعين والتبرعات المقيدة حسب البرنامج وشروط التقييد','مطابقة التبرعات مع كشوف البنوك ومنصات التبرع وسندات القبض'],r_gen:['كشف التبرعات العامة وسندات القبض ومطابقتها مع البنوك والمنصات'],
+r_sub:['كشف المشتركين وعقود الاشتراك وسندات القبض'],r_gov:['عقود المنح والإعانات الحكومية وإخطارات الصرف وتقارير الإنفاق'],r_ink:['محاضر استلام وتقييم التبرعات العينية'],
+r_end:['عقود إيجار الأوقاف وكشف الإيرادات'],r_vol:['كشف الخدمات التطوعية وأسس التقييم'],r_inv:['كشوف الاستثمار وتوزيعات الأرباح'],r_sale:['كشف المبيعات والفواتير'],r_gain:['مستندات بيع الأصول'],r_oth:['تحليل الإيرادات الأخرى ومستنداتها'],r_prior:['تحليل بنود سنوات سابقة وموافقة الجهة المعتمدة'],
+x_prog:['سبع عينات من مصاريف الأنشطة المقيدة قيد ومستند (تُسحب من تبويب كشوف الحسابات)','قرارات اعتماد البرامج والموازنات وتقارير التنفيذ'],x_ink:['محاضر التوزيع وكشوف المستفيدين وفواتير الشراء'],
+x_cash:['كشوف المستفيدين وإثبات الأهلية وقرارات اللجنة ومستندات التحويل (عينة)'],x_end:['فواتير ومستندات مصاريف الأوقاف'],x_zakat:['إقرار وشهادة الزكاة ومستندات السداد'],x_fund:['عقود التسويق وعمولات جمع التبرعات ومستنداتها'],
+x_vol:['كشف الخدمات التطوعية'],x_dep:['بيان الإهلاك ونسب الإهلاك المعتمدة'],x_depi:['بيان إهلاك الأصول الاستثمارية'],x_am:['بيان الإطفاء ونسبه'],
+x_ga:['كشوف الرواتب الشهرية وعقود الموظفين وكشف التأمينات','عقود الإيجار والخدمات وعينة من الفواتير ومستندات الصرف','اعتماد بدلات ومكافآت مجلس الإدارة'],x_prior:['تحليل بنود سنوات سابقة وأسبابها']};
+function pbcList(c){const out=[];[...PB,...PBF[S.client.mode]].forEach((x,i)=>out.push({k:'g'+S.client.mode+i,area:x[0],t:x[1],bal:null}));
+ LN.forEach(l=>{const has=c.accs[l.id].length||(S.client.mode==='prior'&&Math.abs(c.P(l.id))>0&&(l.sec==='A'||l.sec==='L'));if(!has||!PBL[l.id])return;PBL[l.id].forEach((t,i)=>out.push({k:l.id+i,area:l.ar,t,bal:c.cur[l.id]}));if(l.id==='cash'||l.id==='e_cash')groups().forEach(g=>{const rs=g.rows.filter(a=>(S.map[a.id]||{}).line===l.id);if(!rs.length)return;out.push({k:l.id+'g'+g.id,area:l.ar,t:'كشوف '+g.label+' لكل الحسابات ('+rs.length+' حساب) لـ 12 شهراً، والرصيد الختامي لكل حساب',bal:rs.reduce((s,a)=>s+amt(a),0)})})});return out}
+const $=id=>document.getElementById(id);
+function render(){$('nav').innerHTML=TABS.map(t=>`<button class="${tab===t[0]?'on':''}" data-tab="${t[0]}">${t[1]}</button>`).join('')+`<span class="note" style="padding:10px;white-space:nowrap">${saveMsg}</span>`;
+ const c=calc();const f={client:rClient,tb:rTB,prior:rPrior,pbc:rPBC,led:rLed,fs:rFS,chk:rChk}[tab];$('main').innerHTML=f(c)}
+function rClient(){const c=S.client;return`<div class="card"><h2>بيانات العميل</h2><div class="g">
+<div><label>اسم الجمعية</label><input data-c="name" value="${E(c.name)}"></div>
+<div><label>رقم التسجيل (المركز الوطني لتنمية القطاع غير الربحي)</label><input data-c="reg" value="${E(c.reg)}"></div>
+<div><label>المنطقة</label><input data-c="region" value="${E(c.region)}"></div>
+<div><label>السنة المالية المنتهية في 31 ديسمبر</label><input type="number" data-c="year" value="${E(c.year)}"></div>
+<div><label>حالة المراجعة</label><select data-c="mode"><option value="first" ${c.mode==='first'?'selected':''}>سنة أولى (بدون سنة سابقة)</option><option value="prior" ${c.mode==='prior'?'selected':''}>توجد سنة سابقة (قوائم مقارنة)</option></select></div>
+<div><label>تاريخ اعتماد القوائم</label><input data-c="appr" value="${E(c.appr)}"></div>
+<div><label>إعادة تصنيف: صافي الأصول المحررة من القيود خلال السنة (ريال)</label><input class="num" data-reclass value="${S.reclass||''}"></div></div>
+<p class="note">سنة أولى: قوائم لسنة واحدة وأرصدة أول المدة صفر. توجد سنة سابقة: تدخل في تبويب «القوائم السابقة» أرقام آخر قوائم مالية، فتظهر أعمدة مقارنة وتُحسب التدفقات النقدية.</p></div>
+<div class="card"><h2>النسخ الاحتياطي</h2><p class="note">البيانات محفوظة في متصفح هذا الجهاز لهذا الرابط فقط. خذ نسخة احتياطية بعد كل عميل.</p>
+<button class="b" data-act="backup">تنزيل نسخة احتياطية</button><label class="b s">استرجاع نسخة<input type="file" accept=".json" data-act="restore" style="display:none"></label>
+<button class="b r" data-act="reset">بدء عميل جديد (مسح الكل)</button></div>`}
+function lineOpts(sel){let h='<option value="">-- اختر --</option>';['A','L','NA','R','X'].forEach(s=>{h+=`<optgroup label="${SECN[s]}">`+LN.filter(l=>l.sec===s).map(l=>`<option value="${l.id}" ${sel===l.id?'selected':''}>${l.ar}</option>`).join('')+'</optgroup>'});return h}
+/* ===== v2: تسلسل الحسابات والتجميع ودفتر الأستاذ والعينات ===== */
+let RC=null,glDirty=false,tbMsg='',glMsg='',priorMsg='',accSel='';
+const lastIdx=(r,f)=>{for(let i=r.length-1;i>=0;i--)if(f(r[i]))return i;return -1};
+const nm=s=>norm(s).replace(/[^\u0600-\u06FFa-z0-9]+/g,' ').trim();
+const HDR_RE=/^(الاصول|اصول|الاصول المتداوله|اصول متداوله|الاصول غير المتداوله|اصول غير متداوله|الخصوم|خصوم|الالتزامات|التزامات|الالتزامات المتداوله|خصوم متداوله|حقوق الملكيه|الايرادات|ايرادات|المصروفات|مصروفات|المصاريف|مصاريف|الاصول الثابته|اصول ثابته|الاصول الوقفيه)$/;
+const TOT_RE=/^(الاجمالي|اجمالي|المجموع|مجموع|اجمالى|الاجمالى|total|sub ?total|grand total)/;
+function detectHierCode(list){
+ for(let i=list.length-1;i>=0;i--)if(list[i].res)list.splice(i,1);
+ const ok=list.length>=5&&list.filter(a=>/^\d{1,15}$/.test(String(a.code||'').trim())).length>=0.9*list.length;if(!ok)return false;
+ const m={};list.forEach(a=>{a.code=String(a.code).trim();m[a.code]=a});
+ const ch={};let withP=0;
+ list.forEach(a=>{a.par=false;a.pid='';a.why='';for(let k=a.code.length-1;k>=1;k--){const p=m[a.code.slice(0,k)];if(p&&p!==a){a.pid=p.id;(ch[p.id]=ch[p.id]||[]).push(a);withP++;break}}});
+ if(withP<0.2*list.length){list.forEach(a=>{a.pid=''});return false}
+ const add=[];
+ list.forEach(a=>{const c=ch[a.id];if(!c)return;a.par=true;a.why='حساب رئيسي له حسابات فرعية (حسب رقم الحساب)';
+  const r=amt(a)-c.reduce((s,x)=>s+amt(x),0);
+  if(Math.abs(r)>=0.5){add.push({id:nid(),code:a.code,name:a.name+' (رصيد الحساب نفسه دون الفرعية)',dr:r>0?Math.round(r*100)/100:0,cr:r<0?Math.round(-r*100)/100:0,pid:a.pid,par:false,why:'',res:1,after:a})}});
+ add.forEach(x=>{const at=list.indexOf(x.after);delete x.after;list.splice(at+1,0,x)});
+ return true}
+function detectHier(list){if(detectHierCode(list))return;const n=list.length,v=list.map(amt),end=list.map((_,i)=>i+1);
+ for(let k=n-1;k>=0;k--){if(Math.abs(v[k])<0.5)continue;let pos=k+1,sum=0;
+  while(pos<n){sum+=v[pos];pos=end[pos];if(Math.abs(sum-v[k])<=1){end[k]=pos;break}}}
+ list.forEach(a=>{a.par=false;a.pid='';a.why=''});
+ for(let k=0;k<n;k++)if(end[k]>k+1){list[k].par=true;list[k].why='رصيده يساوي مجموع الحسابات التي تحته';let p=k+1;while(p<end[k]){list[p].pid=list[k].id;p=end[p]}}
+ const netAll=v.reduce((s,x)=>s+x,0),netLeaf=list.reduce((s,a)=>s+(a.par?0:amt(a)),0);
+ if(Math.abs(netAll)<1&&Math.abs(netLeaf)>=1){list.forEach(a=>{a.par=false;a.pid='';a.why=''})}
+ list.forEach(a=>{if(!a.par&&HDR_RE.test(norm(a.name))){a.par=true;a.why='عنوان مجموعة'}})}
+const BANKLAB={الراجحي:'مصرف الراجحي',الانماء:'مصرف الإنماء',البلاد:'بنك البلاد',الاهلي:'البنك الأهلي',الرياض:'بنك الرياض',الفرنسي:'البنك السعودي الفرنسي',ساب:'البنك السعودي البريطاني (ساب)',سامبا:'سامبا',الجزيره:'بنك الجزيرة',العربي:'البنك العربي الوطني',الاول:'البنك السعودي الأول',الخليج:'بنك الخليج الدولي'};
+const BANKSTRONG=['الراجحي','الانماء','سامبا','الفرنسي','ساب'];
+function bankOf(name){const nt=String(name||'').split(/[\s\-–:()\/،,]+/).filter(Boolean).map(norm);const hasB=nt.some(t=>/^(بنك|مصرف|البنك|المصرف)$/.test(t));
+ for(const t of nt){if(BANKLAB[t]&&(hasB||BANKSTRONG.includes(t)))return BANKLAB[t]}return''}
+function cleanName(s){return String(s||'').split(/\s+/).filter(t=>t&&!/[0-9٠-٩]/.test(t)&&!/^(رقم|حساب)$/.test(norm(t))&&!/^[-–:\/()]+$/.test(t)).join(' ').replace(/[-–:\s]+$/,'').trim()}
+function groupFor(a,byId){const ln=(S.map[a.id]||{}).line;let p=a,g=0;
+ if(!ln||ln==='cash'||ln==='e_cash'){while(p&&g++<20){const b=bankOf(p.name);if(b)return ln==='e_cash'?b+' (أوقاف)':b;p=p.pid?byId[p.pid]:null}}
+ p=a;g=0;let base=cleanName(a.name);while(!base&&p&&p.pid&&g++<20){p=byId[p.pid];if(p)base=cleanName(p.name)}
+ return base||a.name||'(بدون اسم)'}
+function groups(){const byId={};S.tb.forEach(a=>byId[a.id]=a);const m={},out=[];
+ S.tb.forEach(a=>{if(a.par)return;if(a.grp===undefined)a.grp=groupFor(a,byId);const id=norm(a.grp);if(!m[id]){m[id]={id,label:a.grp,rows:[],line:''};out.push(m[id])}m[id].rows.push(a)});
+ out.forEach(g=>{const cnt={};g.rows.forEach(a=>{const l=(S.map[a.id]||{}).line;if(l)cnt[l]=(cnt[l]||0)+1});g.line=Object.keys(cnt).sort((x,y)=>cnt[y]-cnt[x])[0]||''});return out}
+function addTB(list,replace){if(replace){S.tb=[];S.map={}}
+ detectHier(list);const byL={};list.forEach(a=>byL[a.id]=a);
+ list.forEach(a=>{if(a.par)return;let s=suggest(a.name),p=a,g=0;while(!s&&p.pid&&g++<20){p=byL[p.pid];if(p)s=suggest(p.name)}if(s)S.map[a.id]={line:s,cls:L[s].cls}});
+ list.forEach(a=>S.tb.push(a));const byId={};S.tb.forEach(a=>byId[a.id]=a);list.forEach(a=>{if(!a.par)a.grp=groupFor(a,byId)});
+ const np=list.filter(a=>a.par).length;tbMsg='تمت إضافة '+list.filter(a=>!a.par).length+' حساب'+(np?' وتجاهل '+np+' صف إجمالي أو عنوان (مثل «أصول» و«أصول متداولة») حتى لا تُحسب مرتين':'')+'، وتجميع الحسابات الفرعية تحت حساب رئيسي لكل بنك أو اسم.'}
+function rTB(c){const gs=groups(),leaves=S.tb.filter(a=>!a.par),pars=S.tb.filter(a=>a.par);
+ const sub=a=>{const m=S.map[a.id]||{};const l=L[m.line];const showCls=l&&(l.sec==='R'||l.sec==='X');
+  return`<tr class="${m.line?'':'un'}"><td><input data-tbf="code" data-id="${a.id}" value="${E(a.code)}" style="min-width:60px"></td><td><input data-tbf="name" data-id="${a.id}" value="${E(a.name)}" style="min-width:180px"><div class="note">الحساب الرئيسي: <input data-tbf="grp" data-id="${a.id}" value="${E(a.grp)}" style="min-width:150px"></div></td>
+ <td><input class="num" data-tbf="dr" data-id="${a.id}" value="${a.dr||''}" style="min-width:90px"></td><td><input class="num" data-tbf="cr" data-id="${a.id}" value="${a.cr||''}" style="min-width:90px"></td>
+ <td><select data-map="${a.id}">${lineOpts(m.line)}</select></td><td>${showCls?`<select data-cls="${a.id}">${['U','R','E'].map(k=>`<option value="${k}" ${(m.cls||l.cls)===k?'selected':''}>${CLS[k]}</option>`).join('')}</select>`:''}</td><td><button class="b r" data-del="${a.id}">×</button></td></tr>`};
+ let body='';gs.forEach(g=>{const open=S.open[g.id];let dr=0,cr=0;g.rows.forEach(a=>{dr+=num(a.dr)||0;cr+=num(a.cr)||0});
+  const lines=[...new Set(g.rows.map(a=>(S.map[a.id]||{}).line||''))],lv=lines.length===1?lines[0]:'',l=L[lv],showCls=l&&(l.sec==='R'||l.sec==='X');
+  const cl=showCls?[...new Set(g.rows.map(a=>(S.map[a.id]||{}).cls||l.cls))]:[];
+  body+=`<tr class="gh ${lv?'':'un'}"><td><button class="b s" data-tog="${E(g.id)}">${open?'▾':'▸'} ${g.rows.length}</button></td><td><b>${E(g.label)}</b>${g.rows.length>1?` <span class="note">(${g.rows.length} حساب فرعي مجمّعة)</span>`:''}</td><td class="n">${fm(dr)}</td><td class="n">${fm(cr)}</td>
+  <td><select data-gmap="${E(g.id)}">${lines.length>1?'<option value="__mix" selected>-- مختلط --</option>':''}${lineOpts(lv)}</select></td><td>${showCls?`<select data-gcls="${E(g.id)}">${cl.length>1?'<option value="__mix" selected>مختلط</option>':''}${['U','R','E'].map(k=>`<option value="${k}" ${cl.length===1&&cl[0]===k?'selected':''}>${CLS[k]}</option>`).join('')}</select>`:''}</td><td></td></tr>`;
+  if(open)body+=g.rows.map(sub).join('')});
+ const parRows=pars.map(a=>`<tr><td>${E(a.code)}</td><td>${E(a.name)}</td><td class="n">${fm(num(a.dr))}</td><td class="n">${fm(num(a.cr))}</td><td class="note">${E(a.why||'')}</td><td colspan=2><label style="display:inline"><input type="checkbox" data-par="${a.id}"> احسبه كحساب عادي</label></td></tr>`).join('');
+ return`<div class="card"><h2>ميزان المراجعة</h2>
+ <p class="note">ارفع ملف إكسل أو CSV للميزان (أو الصقه). يقرأ البرنامج الأعمدة، ويتجاهل صفوف الإجماليات والعناوين تلقائياً (الصف الذي يساوي مجموع الحسابات التي تحته)، ويجمّع الحسابات الفرعية تحت حساب رئيسي (مثلاً كل حسابات الراجحي في سطر واحد) ويقترح بند القوائم لكل مجموعة. أي اقتراح تقدر تعدّله من السطر الرئيسي، أو افتح المجموعة (▸) لتعديل حساب فرعي.</p>
+ <label class="b">رفع ميزان المراجعة (xlsx / csv)<input type="file" accept=".xlsx,.csv,.txt" data-act="tbfile" style="display:none"></label>
+ <details><summary>أو الصق الميزان من إكسل</summary><textarea id="tbpaste" placeholder="الصق الميزان هنا"></textarea>
+ <button class="b" data-act="tbadd">إضافة الأرصدة الملصوقة</button><button class="b s" data-act="tbreplace">استبدال الميزان بالملصوق</button></details>
+ <button class="b s" data-act="tbrow">+ سطر</button><button class="b s" data-act="automap">اقتراح التصنيف للبنود غير المصنفة</button><button class="b s" data-act="rehier">إعادة اكتشاف الإجماليات والتجميع</button><button class="b s" data-act="tbexp">فتح/طي كل المجموعات</button>
+ ${tbMsg?`<p class="ok">${tbMsg}</p>`:''}</div>
+ <div class="card"><div class="tw"><table><tr><th></th><th>الحساب الرئيسي / الحساب</th><th>مدين</th><th>دائن</th><th>البند في القوائم</th><th>الفئة</th><th></th></tr>${body||'<tr><td colspan=7 class="note">لا توجد أرصدة بعد</td></tr>'}
+ <tr class="tot"><td colspan=2>الإجمالي (${gs.length} حساب رئيسي / ${leaves.length} حساب فرعي)</td><td class="n">${fm(c.td)}</td><td class="n">${fm(c.tc)}</td><td colspan=3>${Math.abs(c.td-c.tc)<1?'<span class="ok">الميزان متوازن</span>':'<span class="bad">فرق '+fm(c.td-c.tc)+'</span>'} · غير مصنف: ${c.unm.length}</td></tr></table></div>
+ <p class="note">الأصول والمصروفات بالمدين، والالتزامات والإيرادات وصافي الأصول بالدائن. مجمع الإهلاك يُصنف مع الأصل الذي يخصه. أرصدة صافي الأصول في الميزان تمثل أول المدة (قبل إقفال نتيجة السنة). الصفوف الصفراء غير مصنفة.</p></div>
+ ${pars.length?`<div class="card"><h3>صفوف مُتجاهلة (${pars.length}): إجماليات وعناوين</h3><p class="note">هذه الصفوف لا تدخل في الحسابات ولا في المجاميع. إذا كان صف منها حساباً حقيقياً علّم عليه.</p><div class="tw"><table><tr><th>الرقم</th><th>الاسم</th><th>مدين</th><th>دائن</th><th>السبب</th><th colspan=2></th></tr>${parRows}</table></div></div>`:''}`}
+/* ---- دفتر الأستاذ ---- */
+const fixDate=s=>{s=String(s==null?'':s).trim();if(/^\d{5}(\.\d+)?$/.test(s)){const v=+s;if(v>20000&&v<80000)return new Date(Date.UTC(1899,11,30)+Math.floor(v)*864e5).toISOString().slice(0,10).replace(/-/g,'/')}return s};
+function parseGL(text){const rows=text.split(/\r?\n/).filter(l=>l.trim()).map(splitLine);let di=-1,ci=-1,dt=-1,ds=-1,rf=-1,ac=-1,ck=-1,hs=-1;
+ for(let i=0;i<Math.min(12,rows.length);i++){const r=rows[i].map(norm);const d=r.findIndex(x=>/^(مدين|debit|dr)/.test(x)),k=r.findIndex(x=>/^(دا[ئي]ن|credit|cr)/.test(x));
+  if(d>=0&&k>=0){di=d;ci=k;hs=i;dt=r.findIndex(x=>/(تاريخ|date)/.test(x));ds=r.findIndex(x=>/(بيان|وصف|شرح|description|narration|particulars)/.test(x));
+   ck=r.findIndex(x=>/(رقم الحساب|كود|code|account (no|number|code))/.test(x));ac=r.findIndex((x,j)=>j!==ck&&/^(اسم الحساب|اسم حساب|الحساب|حساب|account|account name)$/.test(x));
+   rf=r.findIndex((x,j)=>![dt,ds,ac,ck,di,ci].includes(j)&&/(رقم القيد|رقم السند|مستند|سند|قيد|مرجع|ref|doc|voucher|jv)/.test(x));break}}
+ const out=[];let cur='',curK='',sk=0;
+ rows.forEach((r,ri)=>{let dr,cr,desc,d,ref,a,k;
+  if(ri<=hs){dr=0;cr=0;desc='';d='';ref='';a='';k=''}
+  else if(di>=0){dr=num(r[di])||0;cr=num(r[ci])||0;d=dt>=0?fixDate(r[dt]):'';desc=ds>=0?r[ds]:(r.find((x,j)=>j!==di&&j!==ci&&j!==dt&&j!==ac&&j!==ck&&j!==rf&&x&&!isNum(x))||'');ref=rf>=0?r[rf]:'';a=ac>=0?r[ac]:'';k=ck>=0?r[ck]:''}
+  else{const ni=[];r.forEach((x,j)=>{if(isNum(x))ni.push(j)});const tx=r.map((x,j)=>({x,j})).filter(o=>o.x&&!isNum(o.x));const dd=tx.find(o=>/\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{1,4}/.test(o.x));d=dd?dd.x:'';const de=tx.filter(o=>o!==dd);desc=(de[0]||{}).x||'';ref=(de[1]||{}).x||'';a='';k='';
+   const ns=ni.filter(j=>!/^\d{1,4}[\/\-.]/.test(r[j]));const last=ns.slice(-2);dr=0;cr=0;if(last.length===2){dr=num(r[last[0]]);cr=num(r[last[1]])}else if(last.length===1){const v=num(r[last[0]]);if(v>=0)dr=v;else cr=-v}}
+  const joined=r.join(' ');const hm=joined.match(/^\s*(?:اسم\s+)?(?:ال)?حساب\s*[:：]\s*(.+)$/)||joined.match(/^\s*account(?:\s*name)?\s*[:：]\s*(.+)$/i);
+  if(hm&&!dr&&!cr){cur=hm[1].replace(/\s{2,}/g,' ').trim();curK='';const mk=cur.match(/^([0-9][0-9.\-]*)\s*[-–:]?\s*(.+)$/);if(mk){curK=mk[1];cur=mk[2]}return}
+  if(ri<=hs)return;
+  if(a)cur=a;if(k)curK=k;if(ac<0&&!a)a=cur;else if(!a)a=cur;if(!k)k=curK;
+  const nd=norm(desc),isTot=[desc,r[0],ac>=0?r[ac]:''].some(x=>TOT_RE.test(norm(x)));
+  if(isTot||(!d&&!ref&&/^(رصيد|الرصيد|balance)/.test(nd)&&!/(افتتاح|اول المده|مدور)/.test(nd))){if(dr||cr)sk++;return}
+  if(!dr&&!cr)return;
+  const open=/(افتتاح|اول المده|مدور|opening|b\/f|brought forward|رصيد سابق)/.test(nd)||(!desc.trim()&&!String(ref).trim());
+  out.push({a,k,d,desc,dr,cr,ref,t:'',f:open?'open':''})});
+ out.skipped=sk;return out}
+function matchGL(gs){const lv=S.tb.filter(a=>!a.par),ids=new Set(lv.map(a=>a.id)),bc={},bn={},bg={};
+ lv.forEach(a=>{if(a.code)bc[nm(a.code)]=a;const k=nm(a.name);if(k&&!bn[k])bn[k]=a});gs.forEach(g=>bg[g.id]=g);const cache={};
+ S.gl.forEach(e=>{if(e.t&&!ids.has(e.t)){e.t='';glDirty=true}if(e.gg&&!bg[e.gg]){e.gg='';glDirty=true}if(e.t||e.gg)return;
+  const key=(e.a||'')+'|'+(e.k||'');if(!(key in cache)){let res={},aa=nm(e.a||''),strip=aa.replace(/^[0-9 ]+/,'').trim(),lead=((e.a||'').match(/^\s*([0-9][0-9.\-]*)/)||[])[1];
+   const t=(e.k&&bc[nm(e.k)])||(lead&&bc[nm(lead)])||bn[aa]||bn[strip];
+   if(t)res={t:t.id};else if(aa){const lab=bankOf(e.a)||cleanName(strip||e.a),id=norm(lab);if(bg[id])res={gg:id}}
+   cache[key]=res}
+  const r=cache[key];if(r.t){e.t=r.t;glDirty=true}else if(r.gg){e.gg=r.gg;glDirty=true}})}
+function resolveAll(){if(RC)return RC;const gs=groups(),gby={},byId={};gs.forEach(g=>gby[g.id]=g);S.tb.forEach(a=>byId[a.id]=a);matchGL(gs);
+ const o={ent:[],byLine:{},byGrp:{},unm:{},gs,gby};
+ S.gl.forEach((e,i)=>{let leaf=e.t?byId[e.t]:null;if(leaf&&leaf.par)leaf=null;const g=leaf?gby[norm(leaf.grp)]:(e.gg?gby[e.gg]:null);
+  const line=leaf?((S.map[leaf.id]||{}).line||''):(g?g.line:'');const x={i,e,leaf,gid:g?g.id:'',line,acc:leaf?leaf.name:(e.a||''),amt:(num(e.dr)||0)-(num(e.cr)||0)};
+  if(!leaf&&!g){const k=(e.a||'')+'|'+(e.k||'');const u=o.unm[k]=o.unm[k]||{a:e.a,k:e.k,n:0,net:0};u.n++;u.net+=x.amt;return}
+  o.ent.push(x);(o.byLine[line]=o.byLine[line]||[]).push(x);if(g)(o.byGrp[g.id]=o.byGrp[g.id]||[]).push(x)});
+ return RC=o}
+const inPop=x=>x.e.f!=='open'||S.sp.inc;
+function popOf(key){const R=resolveAll(),src=key.startsWith('L:')?(R.byLine[key.slice(2)]||[]):(R.byGrp[key.slice(2)]||[]);
+ return src.filter(inPop).filter(x=>x.amt!==0).map(x=>({i:x.i,d:x.e.d,acc:x.acc,desc:x.e.desc,ref:x.e.ref,amt:x.amt,f:x.e.f}))}
+function scopeName(key){if(key.startsWith('L:')){const l=L[key.slice(2)];return'بند: '+(l?l.ar:'غير مصنف')}const g=(resolveAll().gby||{})[key.slice(2)];return'حساب رئيسي: '+(g?g.label:key.slice(2))}
+function prng(s){return function(){s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function sampleFrom(led,p){const rnd=prng(+p.seed||1),sel=[],used=new Set(),key=num(p.key)||0;
+ if(key>0)led.forEach(r=>{if(Math.abs(r.amt)>=key){sel.push({...r,why:'بند كبير'});used.add(r.i)}});
+ const rest=led.filter(r=>!used.has(r.i)),n=Math.max(0,Math.min(+p.n||0,rest.length));
+ if(p.method==='rnd'){const pool=rest.slice();for(let k=0;k<n;k++){const j=Math.floor(rnd()*pool.length);sel.push({...pool[j],why:'عشوائي'});pool.splice(j,1)}}
+ else if(n>0){const total=rest.reduce((s,r)=>s+Math.abs(r.amt),0),iv=total/n;let pt=rnd()*iv,cum=0;const got=new Set();
+  rest.forEach(r=>{cum+=Math.abs(r.amt);while(pt<cum){if(!got.has(r.i)){got.add(r.i);sel.push({...r,why:'حسب القيمة'})}pt+=iv}})}
+ return sel}
+function drawScope(key){const led=popOf(key);if(!led.length)return 0;const sel=sampleFrom(led,S.sp);sel.sort((x,y)=>x.i-y.i);
+ S.samples[key]={p:{...S.sp},pop:{n:led.length,net:led.reduce((s,r)=>s+r.amt,0),abs:led.reduce((s,r)=>s+Math.abs(r.amt),0)},items:sel.map(r=>({d:r.d,acc:r.acc,desc:r.desc,ref:r.ref,amt:r.amt,why:r.why}))};return sel.length}
+function sampleHtml(key){const s=S.samples[key];if(!s)return'';const t=v=>v?'✓':'';
+ return`<h4>${E(scopeName(key))}</h4><p>المجتمع: ${s.pop.n} حركة · القيمة المطلقة ${fm(s.pop.abs)} · حجم العينة ${s.items.length}</p><table><tr><th>#</th><th>التاريخ</th><th>الحساب الفرعي</th><th>البيان</th><th>المبلغ</th><th>المستند</th><th>سبب الاختيار</th><th>القيد صحيح</th><th>المستند مرفق</th><th>معتمد</th><th>ملاحظات</th></tr>`+s.items.map((it,i)=>`<tr><td>${i+1}</td><td>${E(it.d)}</td><td>${E(it.acc)}</td><td>${E(it.desc)}</td><td>${fm(it.amt)}</td><td>${E(it.ref)}</td><td>${E(it.why)}</td><td>${t(it.ok)}</td><td>${t(it.doc)}</td><td>${t(it.ap)}</td><td>${E(it.note||'')}</td></tr>`).join('')+'</table><br>'}
+function rLed(c){const R=resolveAll(),nat=(l,v)=>(l.sec==='A'||l.sec==='X')?v:-v;
+ const lineRows=LN.filter(l=>l.sec!=='NA'&&(Math.abs(c.cur[l.id])>0.5||R.byLine[l.id])).map(l=>{const es=R.byLine[l.id]||[],net=es.reduce((s,x)=>s+x.amt,0),pop=es.filter(inPop).filter(x=>x.amt!==0).length,ex=es.length-es.filter(inPop).length,tb=c.cur[l.id],diff=nat(l,net)-tb;
+  const subs=new Set(es.map(x=>x.gid)).size;
+  return`<tr class="${es.length?'':'un'}"><td>${E(l.ar)}</td><td class="n">${fm(tb)}</td><td>${es.length?pop:'لا توجد حركات'}</td><td>${subs||''}</td><td>${ex||''}</td><td class="n">${es.length?fm(nat(l,net)):''}</td><td>${es.length?(Math.abs(diff)<1?'<span class="ok">مطابق</span>':'<span class="warn">فرق '+fm(diff)+'</span>'):''}</td><td>${es.length?`<button class="b s" data-act="pick" data-key="L:${l.id}">اختيار</button>`:''}</td></tr>`}).join('');
+ const keys=[];LN.forEach(l=>{if((R.byLine[l.id]||[]).length)keys.push('L:'+l.id)});R.gs.forEach(g=>{if((R.byGrp[g.id]||[]).length&&g.rows.length>0)keys.push('G:'+g.id)});
+ if(!ledSel||!keys.includes(ledSel))ledSel=keys[0]||'';
+ const opt=k=>`<option value="${E(k)}" ${k===ledSel?'selected':''}>${E(scopeName(k))}${S.samples[k]?' ✓':''}</option>`;
+ const unm=Object.values(R.unm).sort((a,b)=>b.n-a.n),leaves=S.tb.filter(a=>!a.par);
+ const lopts=leaves.map(a=>`<option value="${a.id}">${E(a.grp)} › ${E(a.name)}</option>`).join('');
+ const unmRows=unm.slice(0,100).map((u,i)=>`<tr><td>${E(u.k)} ${E(u.a)}</td><td>${u.n}</td><td class="n">${fm(u.net)}</td><td><select data-glfix="${E(u.a+'|'+u.k)}"><option value="">-- اختر الحساب في الميزان --</option>${lopts}</select></td></tr>`).join('');
+ const pp=ledSel?popOf(ledSel):[],sm=ledSel?S.samples[ledSel]:null;
+ const subTbl=ledSel?(()=>{const m={};(ledSel.startsWith('L:')?(R.byLine[ledSel.slice(2)]||[]):(R.byGrp[ledSel.slice(2)]||[])).filter(inPop).filter(x=>x.amt!==0).forEach(x=>{const k=x.gid||'';const o=m[k]=m[k]||{n:0,net:0,l:(R.gby[k]||{}).label||'-'};o.n++;o.net+=x.amt});const a=Object.values(m);return a.length>1||ledSel.startsWith('L:')?`<p class="note">مكونات المجتمع حسب الحساب الرئيسي: ${a.map(o=>E(o.l)+' ('+o.n+' حركة، '+fm(o.net)+')').join(' · ')}</p>`:''})():'';
+ const items=sm?sm.items.map((it,i)=>`<tr><td>${i+1}</td><td>${E(it.d)}</td><td>${E(it.acc)}</td><td>${E(it.desc)}</td><td class="n">${fm(it.amt)}</td><td>${E(it.ref)}</td><td>${E(it.why)}</td>
+ <td><input type="checkbox" data-sck="ok" data-i="${i}" ${it.ok?'checked':''}></td><td><input type="checkbox" data-sck="doc" data-i="${i}" ${it.doc?'checked':''}></td><td><input type="checkbox" data-sck="ap" data-i="${i}" ${it.ap?'checked':''}></td><td><input data-sck="note" data-i="${i}" value="${E(it.note||'')}"></td></tr>`).join(''):'';
+ return`<div class="card"><h2>دفتر الأستاذ / كشوف الحسابات</h2>
+ <p class="note">ارفع ملف إكسل أو CSV لدفتر الأستاذ (أو كشوف الحسابات كلها في ملف واحد) بالأعمدة: الحساب (أو رقم الحساب)، التاريخ، البيان، مدين، دائن، رقم القيد/السند. يقبل أيضاً الكشف الذي يبدأ كل حساب فيه بسطر «الحساب: ...». يربط البرنامج كل حساب بالميزان تلقائياً (بالرقم ثم الاسم ثم الحساب الرئيسي، فكل حسابات الراجحي تجتمع في حساب واحد)، ويستبعد الأرصدة الافتتاحية وأسطر المجاميع من العينة.</p>
+ <label class="b">رفع دفتر الأستاذ (xlsx / csv)<input type="file" accept=".xlsx,.csv,.txt" data-act="glfile" style="display:none"></label>
+ <details><summary>أو الصق الدفتر من إكسل</summary><textarea id="glpaste" placeholder="الصق الدفتر هنا"></textarea><button class="b" data-act="gladd">إضافة الحركات الملصوقة</button></details>
+ <button class="b s" data-act="glmatch">إعادة المطابقة مع الميزان</button><button class="b r" data-act="glclear">مسح كل الحركات</button>
+ ${glMsg?`<p class="ok">${glMsg}</p>`:''}
+ <p>إجمالي الحركات: <b>${S.gl.length}</b> · غير مربوطة بالميزان: <b>${unm.reduce((s,u)=>s+u.n,0)}</b> (${unm.length} حساب)</p>
+ <details><summary>إدخال كشف حساب واحد لحساب محدد</summary><label>الحساب في الميزان</label><select data-accsel><option value="">-- اختر --</option>${leaves.map(a=>`<option value="${a.id}" ${a.id===accSel?'selected':''}>${E(a.grp)} › ${E(a.name)}</option>`).join('')}</select>
+ <textarea id="ledpaste" placeholder="الصق كشف الحساب هنا"></textarea><button class="b" data-act="ledadd">اعتماد الكشف الملصوق لهذا الحساب</button><label class="b s">رفع xlsx / csv<input type="file" accept=".xlsx,.csv,.txt" data-act="ledfile" style="display:none"></label></details></div>
+ ${unm.length?`<div class="card"><h3>حسابات في الدفتر غير مربوطة بالميزان (${unm.length})</h3><p class="note">اختر الحساب المقابل في الميزان، وتنتقل كل حركاته إليه.</p><div class="tw"><table><tr><th>الحساب في الدفتر</th><th>الحركات</th><th>الصافي</th><th>يقابله في الميزان</th></tr>${unmRows}</table></div>${unm.length>100?'<p class="note">يظهر أول 100 حساب فقط.</p>':''}</div>`:''}
+ <div class="card"><h3>تغطية البنود (على مستوى بند القوائم)</h3><div class="tw"><table><tr><th>البند</th><th>رصيد الميزان</th><th>حركات المجتمع</th><th>حسابات رئيسية</th><th>مستبعد</th><th>صافي الدفتر</th><th>مطابقة</th><th></th></tr>${lineRows||'<tr><td colspan=8 class="note">أدخل الميزان والدفتر أولاً</td></tr>'}</table></div>
+ <p class="note">المطابقة تقارن صافي كل حركات الدفتر (شاملة الافتتاحي) برصيد الميزان للبند. الصفوف الصفراء بنود لم تُرفع لها حركات بعد.</p></div>
+ <div class="card"><h3>سحب العينة</h3>
+ ${keys.length?`<label>نطاق العينة (يُسحب من قيود كل الحسابات الفرعية معاً)</label><select data-ledsel>${keys.filter(k=>k[0]==='L').length?'<optgroup label="حسب بند القوائم">'+keys.filter(k=>k[0]==='L').map(opt).join('')+'</optgroup>':''}${keys.filter(k=>k[0]==='G').length?'<optgroup label="حسب الحساب الرئيسي">'+keys.filter(k=>k[0]==='G').map(opt).join('')+'</optgroup>':''}</select>`:'<p>ارفع دفتر الأستاذ أولاً.</p>'}
+ <div class="g">
+ <div><label>عدد العينات</label><input type="number" data-sp="n" value="${S.sp.n}"></div>
+ <div><label>حد البنود الكبيرة (تُفحص كلها، 0 = بدون)</label><input class="num" data-sp="key" value="${S.sp.key||''}"></div>
+ <div><label>الطريقة</label><select data-sp="method"><option value="mus" ${S.sp.method==='mus'?'selected':''}>حسب القيمة (MUS): البنود الأكبر أرجح</option><option value="rnd" ${S.sp.method==='rnd'?'selected':''}>عشوائية بسيطة</option></select></div>
+ <div><label>رقم البذرة (لإعادة نفس العينة)</label><input type="number" data-sp="seed" value="${S.sp.seed}"></div></div>
+ <label style="display:inline"><input type="checkbox" data-spinc ${S.sp.inc?'checked':''}> إدراج الأرصدة الافتتاحية في المجتمع</label><br>
+ <button class="b" data-act="draw">سحب العينة للنطاق المختار</button><button class="b" data-act="drawall">سحب عينة لكل البنود</button><button class="b s" data-act="samplexls">تنزيل العينة المختارة (إكسل)</button><button class="b s" data-act="samplexlsall">تنزيل كل العينات (إكسل)</button>
+ ${ledMsg?`<p class="ok">${ledMsg}</p>`:''}
+ <p class="note">المجتمع: الحركات ذات المبلغ غير الصفري بعد استبعاد الأرصدة الافتتاحية وأسطر المجاميع. عند إعادة السحب تُمسح علامات الفحص السابقة.</p>
+ ${ledSel?`<p>المجتمع الحالي: <b>${pp.length}</b> حركة · القيمة المطلقة <b>${fm(pp.reduce((s,r)=>s+Math.abs(r.amt),0))}</b></p>${subTbl}`:''}
+ <div class="tw">${sm?`<p><b>${E(scopeName(ledSel))}</b>: عينة ${sm.items.length} من ${sm.pop.n}</p>`:''}<table id="smt"><tr><th>#</th><th>التاريخ</th><th>الحساب الفرعي</th><th>البيان</th><th>المبلغ</th><th>المستند</th><th>سبب الاختيار</th><th>القيد صحيح</th><th>المستند مرفق</th><th>معتمد</th><th>ملاحظات</th></tr>${items||'<tr><td colspan=11 class="note">لم تُسحب عينة بعد</td></tr>'}</table></div></div>`}
+function parsePrior(text,first){const rows=text.split(/\r?\n/).filter(l=>l.trim()).map(splitLine),got={},un=[];
+ let vc=-1,bestY=0;
+ for(let i=0;i<Math.min(rows.length,40)&&vc<0;i++){const ys=[];const f0=rows[i].findIndex(x=>x);rows[i].forEach((x,j)=>{if(j===f0)return;const m=String(x).match(/(?:^|[^0-9])((?:19|20)\d\d|14\d\d)(?![0-9])/);if(m&&!isNum(x)||/^(20\d\d|14\d\d)$/.test(String(x).trim()))ys.push([j,+(m?m[1]:x)])});
+  if(ys.length>=1&&rows[i].filter(x=>x&&isNum(x)&&!/^-?\d{1,3}$/.test(String(x).trim())).length===0){let mx=0;ys.forEach(([j,y])=>{if(y>mx){mx=y;vc=j}});bestY=mx}}
+ rows.forEach(r=>{const label=r.find(x=>x&&!isNum(x))||'';if(!label||TOT_RE.test(norm(label)))return;let v;
+  if(vc>=0&&isNum(r[vc]||'')){v=num(r[vc])}else{let ns=r.filter(x=>x&&isNum(x)).map(num);if(vc>=0)ns=[];if(ns.length>1){const big=ns.filter(x=>!(Number.isInteger(x)&&Math.abs(x)<100));if(big.length)ns=big}v=ns[0]}
+  if(!v)return;const n=norm(label);let id=(LN.find(l=>norm(l.ar)===n)||{}).id;if(!id){const s=suggest(label);if(s)id=s}
+  if(!id){const q=[[/(منح|اعان)/,'r_gov'],[/(بيع اصول|مكاسب)/,'r_gain'],[/عينيه/,'r_ink'],[/^اصول الاوقاف/,'e_ppe']].find(z=>z[0].test(n));if(q)id=q[1]}
+  if(!id||L[id].sec==='NA'&&!/صافي/.test(n)){un.push(label);return}if(first&&first[id]!==undefined)return;got[id]=(got[id]||0)+(L[id].sec==='NA'?v:Math.abs(v))});return{got,un,year:bestY}}
+async function priorFromXlsx(buf){const sh=await readXlsx(buf,true);const keep=sh.filter(x=>/(مركز|انشط|دخل|ايراد)/.test(norm(x.name))&&!/تدفق/.test(norm(x.name)));const use=keep.length?keep:sh.filter(x=>!/(غلاف|فهرس)/.test(norm(x.name)));
+ const got={},un=[];let year=0;use.forEach(x=>{const p=parsePrior(x.text,got);Object.keys(p.got).forEach(k=>{if(got[k]===undefined)got[k]=p.got[k]});p.un.forEach(u=>un.push(u));if(p.year>year)year=p.year});return{got,un,year,sheets:use.map(x=>x.name)}}
+
+
+function glSummary(l){RC=null;const R=resolveAll();const mapped=l.length;return 'تم إدخال '+mapped+' حركة'+(l.skipped?' (تم تجاهل '+l.skipped+' سطر مجاميع)':'')+(Object.keys(R.unm).length?'، منها حسابات غير مربوطة بالميزان: '+Object.keys(R.unm).length+' (اربطها من القائمة أدناه).':'، وكلها مربوطة بالميزان.')}
+function setAcc(id,l){S.gl=S.gl.filter(e=>e.t!==id);l.forEach(e=>{e.t=id;e.m=1});S.gl.push(...l);glDirty=true;ledMsg='';}
+function ensureGL(){if(S.ledgers&&Object.keys(S.ledgers).length){Object.keys(S.ledgers).forEach(id=>(S.ledgers[id]||[]).forEach(r=>S.gl.push({a:'',k:'',d:r.d,desc:r.desc,dr:num(r.dr)||0,cr:num(r.cr)||0,ref:r.ref,t:id,m:1,f:(!String(r.desc||'').trim()&&!r.ref)?'open':''})));S.ledgers={};S.samples={};glDirty=true;save()}}
+ensureGL();
+/* ---- قراءة PDF للقوائم السابقة ---- */
+let PDFST={busy:false,msg:'',pages:[],sel:{},col:{},map:{},val:{},done:false,mode:''};
+function loadScript(src){return new Promise((ok,no)=>{if(document.querySelector('script[data-lib="'+src+'"]'))return ok();const e=document.createElement('script');e.src=src;e.dataset.lib=src;e.onload=ok;e.onerror=()=>no(new Error('تعذر تحميل '+src));document.head.appendChild(e)})}
+async function ensurePdfLibs(){await loadScript('pdf.min.js');await loadScript('tesseract.min.js');await loadScript('pdfimport.js')}
+function priorId(label){const n=norm(label);if(!n||TOT_RE.test(n))return'';let id=(LN.find(l=>norm(l.ar)===n)||{}).id;if(!id){const s=suggest(label);if(s)id=s}
+ if(!id){const q=[[/(منح|اعان)/,'r_gov'],[/(بيع اصول|مكاسب)/,'r_gain'],[/عينيه/,'r_ink'],[/^اصول الاوقاف/,'e_ppe']].find(z=>z[0].test(n));if(q)id=q[1]}
+ if(!id||L[id].sec==='NA'&&!/صافي/.test(n))return'';return id}
+function pdfPageView(p){const vals=[];p.rows.forEach(r=>r.vals.forEach(v=>vals.push(v)));const H=p.H||20;
+ const xs=vals.map(v=>v.x).sort((a,b)=>b-a);const cl=[];xs.forEach(x=>{const c=cl[cl.length-1];if(c&&c.min-x<2.4*H){c.min=x;c.n++}else cl.push({max:x,min:x,n:1})});
+ const colOf=v=>cl.findIndex(c=>v.x<=c.max+1&&v.x>=c.min-1);
+ let noteCol=-1;if(cl.length>=2){const nv=vals.filter(v=>colOf(v)===0);if(nv.length>=2&&nv.every(v=>v.v!==null&&Math.abs(v.v)<100&&Number.isInteger(v.v)))noteCol=0}
+ const first=noteCol===0?1:0,nc=cl.length-first;const def=nc>=4?nc-2:0;const sel=PDFST.col[p.n]===undefined?def:Math.min(PDFST.col[p.n],Math.max(nc-1,0));
+ const rows=p.rows.map((r,i)=>{const key=p.n+':'+i;const vv=r.vals.find(v=>colOf(v)===first+sel);const lab=String(r.label||'').replace(/[\u200e\u200f\u202a-\u202e]/g,'').trim();
+  const val=PDFST.val[key]!==undefined?PDFST.val[key]:(vv?(vv.v===null?'':vv.v):'');const raw=vv?vv.raw:'';
+  const auto=priorId(lab);const id=PDFST.map[key]!==undefined?PDFST.map[key]:auto;
+  return{key,lab,val,raw,unk:!!(vv&&vv.unk),id,has:!!vv,tot:TOT_RE.test(norm(lab))||/^(اجمال|مجموع)/.test(norm(lab))}}).filter(r=>r.has||r.val!=='');
+ return{rows,nc,sel,def}}
+function pdfTitle(p){const t=p.rows.slice(0,10).map(r=>r.label).find(l=>/(قائمه|قائمة|ايضاح|إيضاح|تقرير)/.test(l.replace(/[ًٌٍَُِّْ]/g,'')));return(t||(p.rows[0]||{}).label||'').replace(/[A-Za-z0-9\u200e\u200f]/g,'').trim().slice(0,45)}
+function pdfAutoSel(pages){pages.forEach(p=>{const ts=p.rows.slice(0,8).map(r=>norm(String(r.label||'').replace(/[\u200e\u200f\u202a-\u202e]/g,''))).filter(l=>/^قا.مه/.test(l)&&!/\.\.|…/.test(l));
+  const t=ts[0]||'';PDFST.sel[p.n]=/(مركز\s*ال\s*م|انشط)/.test(t)&&!/تدفق/.test(t)})}
+function pdfApplyTotals(){const acc={};let n=0;PDFST.pages.forEach(p=>{if(!PDFST.sel[p.n])return;pdfPageView(p).rows.forEach(r=>{if(!r.id||r.val===''||r.val===null)return;const v=num(r.val);if(!v)return;acc[r.id]=(acc[r.id]||0)+(L[r.id].sec==='NA'?v:Math.abs(v));n++})});return{acc,n}}
+function rPdf(){const P=PDFST;if(!P.busy&&!P.msg&&!P.pages.length)return'';
+ let h=`<div class="card"><h3>قراءة ملف PDF</h3>`;if(P.msg)h+=`<p class="${P.err?'bad':'ok'}">${E(P.msg)}</p>`;
+ if(P.busy){return h+'<p class="note">القراءة تتم داخل جهازك، ولا يُرسل الملف لأي جهة. لا تغلق الصفحة.</p></div>'}
+ if(!P.pages.length)return h+'</div>';
+ h+=`<p class="note">${P.mode==='text'?'الملف يحتوي نصاً، فقُرئت الأرقام كما هي.':'الملف مصوّر (ممسوح ضوئياً)، فقُرئ بقراءة ضوئية محلية. الأرقام قد يقع فيها خطأ: قارن كل رقم بالملف الأصلي قبل الاعتماد. الخانات الحمراء فيها رمز لم يُقرأ (؟) وتحتاج تصحيحاً.'} الصفحات المقترحة هي صفحات المركز المالي وقائمة الأنشطة، وتقدر تغيّرها.</p><div class="tw"><table><tr><th>استخدم</th><th>الصفحة</th><th>العنوان</th><th>العمود</th></tr>`;
+ P.pages.forEach(p=>{const v=pdfPageView(p);h+=`<tr><td><input type="checkbox" data-pdfpg="${p.n}" ${P.sel[p.n]?'checked':''}></td><td>${p.n}</td><td>${E(pdfTitle(p))}</td><td><select data-pdfcol="${p.n}">${Array.from({length:Math.max(v.nc,1)},(_,i)=>`<option value="${i}" ${i===v.sel?'selected':''}>${i===0?'الأول من اليمين (الأحدث)':'رقم '+(i+1)+' من اليمين'}</option>`).join('')}</select></td></tr>`});
+ h+='</table></div>';
+ let body='';P.pages.forEach(p=>{if(!P.sel[p.n])return;const v=pdfPageView(p);body+=`<tr class="hd"><td colspan=4>صفحة ${p.n}${v.nc>1?` · ${v.nc} أعمدة أرقام`:''}</td></tr>`;
+  v.rows.forEach(r=>{const bad=r.unk||(r.val===''&&r.has);body+=`<tr class="${r.id?'':(r.tot?'':'un')}"><td>${E(r.lab)}</td><td><input class="num ${bad?'bad':''}" data-pdfval="${r.key}" value="${E(r.val)}" style="min-width:110px;${bad?'background:#fde2e2':''}"></td><td class="note" dir="ltr">${E(r.raw)}</td><td><select data-pdfmap="${r.key}">${lineOpts(r.id)}</select></td></tr>`})});
+ const t=pdfApplyTotals(),A=LN.filter(l=>l.sec==='A').reduce((s,l)=>s+(t.acc[l.id]||0),0),Lb=LN.filter(l=>l.sec==='L').reduce((s,l)=>s+(t.acc[l.id]||0),0),NA=LN.filter(l=>l.sec==='NA').reduce((s,l)=>s+(t.acc[l.id]||0),0);
+ h+=`<div class="tw"><table><tr><th>البند كما قُرئ</th><th>المبلغ</th><th>القراءة الخام</th><th>البند في القوائم</th></tr>${body||'<tr><td colspan=4 class="note">اختر صفحة</td></tr>'}</table></div>
+ <p>فحص قبل الاعتماد: أصول ${fm(A)} / التزامات ${fm(Lb)} / صافي أصول ${fm(NA)} ← ${A===0&&Lb===0?'':Math.abs(A-Lb-NA)<1?'<span class="ok">متوازن</span>':'<span class="bad">غير متوازن بفرق '+fm(A-Lb-NA)+' (راجع الأرقام)</span>'}</p>
+ <button class="b" data-act="pdfapply">اعتماد وتعبئة القوائم السابقة (${Object.keys(t.acc).length} بند)</button><button class="b s" data-act="pdfclear">مسح</button></div>`;return h}
+function rPrior(c){if(S.client.mode!=='prior')return`<div class="card"><h2>القوائم السابقة</h2><p>الحالة «سنة أولى»، فلا حاجة لهذا التبويب. غيّر الحالة من بيانات العميل لإدخال آخر قوائم مالية.</p></div>`;
+ const grp=(sec,lab)=>`<tr class="hd"><td colspan=2>${lab}</td></tr>`+LN.filter(l=>l.sec===sec).map(l=>`<tr><td>${l.ar}</td><td><input class="num" data-prior="${l.id}" value="${S.prior[l.id]||''}"></td></tr>`).join('');
+ return`<div class="card"><h3>استيراد آخر قوائم مالية من إكسل</h3><p class="note">ارفع ملف إكسل أو CSV للقوائم السابقة (أو الصق الجدول)، ويتعرف البرنامج على البنود بأسمائها ويعبّي الأرقام. يؤخذ أول عمود أرقام (السنة الأحدث) ويُتجاهل عمود رقم الإيضاح. ملفات PDF (بما فيها الممسوحة ضوئياً) تُقرأ بالزر الثاني، مع مراجعة قبل الاعتماد.</p><label class="b">رفع القوائم السابقة (xlsx / csv)<input type="file" accept=".xlsx,.csv,.txt" data-act="priorfile" style="display:none"></label><details><summary>أو الصق الجدول</summary><textarea id="priorpaste"></textarea><button class="b" data-act="priorapply">تعبئة من الملصوق</button></details>${priorMsg?`<p class="ok">${priorMsg}</p>`:''}<div style="margin-top:10px"><label class="b">رفع القوائم السابقة (PDF، حتى الممسوح ضوئياً)<input type="file" accept=".pdf,application/pdf" data-act="priorpdf" style="display:none"></label></div></div>${rPdf()}<div class="card"><h2>آخر قوائم مالية (أرقام السنة السابقة)</h2><p class="note">أدخل الأرقام كما ظهرت في آخر قوائم معتمدة. الأصول والالتزامات: رصيد نهاية السنة السابقة. صافي الأصول: رصيد نهاية السنة السابقة لكل فئة. الإيرادات والمصروفات: إجمالي كل بند للسنة السابقة.</p>
+ <div class="tw"><table><tr><th>البند</th><th>المبلغ</th></tr>${grp('A','الأصول')}${grp('L','الالتزامات')}${grp('NA','صافي الأصول في نهاية السنة السابقة')}${grp('R','إيرادات السنة السابقة')}${grp('X','مصروفات السنة السابقة')}</table></div>
+ <h3>التدفقات النقدية للسنة السابقة (من آخر قوائم)</h3><div class="g"><div><label>التشغيلية</label><input class="num" data-pcf="op" value="${S.pcf.op||''}"></div><div><label>الاستثمارية</label><input class="num" data-pcf="inv" value="${S.pcf.inv||''}"></div><div><label>التمويلية</label><input class="num" data-pcf="fin" value="${S.pcf.fin||''}"></div><div><label>النقد أول السنة السابقة</label><input class="num" data-pcf="cash0" value="${S.pcf.cash0||''}"></div></div>
+ <p>فحص: أصول ${fm(c.pA)} / التزامات ${fm(c.pL)} / صافي أصول ${fm(c.pNA)} ← ${Math.abs(c.pA-c.pL-c.pNA)<1?'<span class="ok">متوازن</span>':'<span class="bad">غير متوازن بفرق '+fm(c.pA-c.pL-c.pNA)+'</span>'}</p></div>`}
+function rPBC(c){const list=pbcList(c);let area='',h='';
+ list.forEach(x=>{if(x.area!==area){area=x.area;h+=`<tr class="hd"><td colspan=4>${E(area)}</td></tr>`}const p=S.pbc[x.k]||{};
+ h+=`<tr><td>${E(x.t)}</td><td class="n">${x.bal==null?'':fm(x.bal)}</td><td><select data-pst="${x.k}">${['لم يُطلب','طُلب','مستلم','مستلم ناقص','لا ينطبق'].map(s=>`<option ${p.st===s||(!p.st&&s==='لم يُطلب')?'selected':''}>${s}</option>`).join('')}</select></td><td><input data-pnote="${x.k}" value="${E(p.note||'')}"></td></tr>`});
+ const done=list.filter(x=>['مستلم','لا ينطبق'].includes((S.pbc[x.k]||{}).st)).length;
+ return`<div class="card"><h2>قائمة الطلبات من العميل</h2><p class="note">تتولد من البنود التي لها أرصدة في الميزان${S.client.mode==='prior'?' أو في القوائم السابقة':''}، وتضم طلباتك الثابتة (بيان الإهلاك، قيد التأمينات، سبع عينات...). المستلم أو لا ينطبق: ${done} من ${list.length}.</p>
+ <button class="b" data-act="pbcxls">تنزيل (إكسل)</button><button class="b s" data-act="print">طباعة / PDF</button>
+ <div class="tw"><table id="pbct"><tr><th>الطلب</th><th>الرصيد</th><th>الحالة</th><th>ملاحظات</th></tr>${h}</table></div></div>`}
+let ledSel='',ledMsg='';
+function hdr(title,extra){const k=S.client;return`<div class="fs"><h4>${E(k.name||'اسم الجمعية')}</h4><p class="t">${k.reg?'مسجلة بالمركز الوطني لتنمية القطاع غير الربحي برقم ('+E(k.reg)+')':''} ${E(k.region)}</p><h4>${title}</h4><p class="t">${E(extra||'المبالغ بالريال السعودي')} · مسودة قيد المراجعة</p>`}
+function noteNums(c){const m={};let n=4;LN.forEach(l=>{if(l.sec!=='NA'&&c.accs[l.id].length)m[l.id]=n++});return m}
+function rFS(c){const k=S.client,yr=k.year,pr=k.mode==='prior',yp=yr-1,N=noteNums(c);
+ const cols=(a,b)=>`<td class="n">${fm(a,1)}</td>${pr?`<td class="n">${fm(b,1)}</td>`:''}`;
+ const th=`<tr><th>البيان</th><th>إيضاح</th><th class="n">${yr}</th>${pr?`<th class="n">${yp}</th>`:''}</tr>`;
+ const row=id=>{const l=L[id];if(!c.cur[id]&&!(pr&&c.P(id)))return'';return`<tr><td>${l.ar}</td><td>${N[id]||''}</td>${cols(c.cur[id],c.P(id))}</tr>`};
+ const T=(lab,a,b)=>`<tr class="tot"><td colspan=2>${lab}</td>${cols(a,b)}</tr>`;
+ const sP=a=>a.reduce((s,i)=>s+c.P(i),0),sC=a=>a.reduce((s,i)=>s+c.cur[i],0);
+ const ca=['cash','recv','prepaid','inv'],inv=['invest'],nca=['ppe','intang','invprop'],ea=['e_cash','e_ppe','e_cip'],cl=['accr','otherpay'],ncl=['eosb','loan'];
+ const sect=(lab,a)=>a.some(i=>c.cur[i]||(pr&&c.P(i)))?`<tr class="hd"><td colspan=${pr?4:3}>${lab}</td></tr>`+a.map(row).join('')+T('إجمالي '+lab,sC(a),sP(a)):'';
+ const bs=hdr('قائمة المركز المالي كما في 31 ديسمبر '+yr+'م')+`<table>${th}<tr class="hd"><td colspan=${pr?4:3}>الأصول</td></tr>`+sect('الأصول المتداولة',ca)+sect('الاستثمارات والأصول المالية',inv)+sect('الأصول غير المتداولة',nca)+sect('أصول الأوقاف',ea)+T('إجمالي الأصول',c.totA,c.pA)
+ +`<tr class="hd"><td colspan=${pr?4:3}>الالتزامات وصافي الأصول</td></tr>`+sect('الالتزامات المتداولة',cl)+sect('الالتزامات غير المتداولة',ncl)+T('إجمالي الالتزامات',c.totL,c.pL)
+ +`<tr class="hd"><td colspan=${pr?4:3}>صافي الأصول</td></tr>`+['U','R','E'].map(x=>`<tr><td>صافي الأصول ${CLS[x]}</td><td></td>${cols(c.naC[x],c.naP[x])}</tr>`).join('')+T('إجمالي صافي الأصول',c.totNA,c.pNA)+T('إجمالي الالتزامات وصافي الأصول',c.totL+c.totNA,c.pL+c.pNA)+`</table><p class="note">الإيضاحات المرفقة جزء لا يتجزأ من هذه القوائم المالية.</p></div>`;
+ const ac=id=>{const a=c.act[id];const t=a.U+a.R+a.E;if(!t&&!(pr&&c.P(id)))return'';return`<tr><td>${L[id].ar}</td><td>${N[id]||''}</td><td class="n">${fm(a.U,1)}</td><td class="n">${fm(a.R,1)}</td><td class="n">${fm(a.E,1)}</td><td class="n">${fm(t,1)}</td>${pr?`<td class="n">${fm(c.P(id),1)}</td>`:''}</tr>`};
+ const rv=LN.filter(l=>l.sec==='R').map(l=>l.id),xp=LN.filter(l=>l.sec==='X').map(l=>l.id);
+ const tr=(lab,u,r,e,p)=>`<tr class="tot"><td colspan=2>${lab}</td><td class="n">${fm(u,1)}</td><td class="n">${fm(r,1)}</td><td class="n">${fm(e,1)}</td><td class="n">${fm(u+r+e,1)}</td>${pr?`<td class="n">${fm(p,1)}</td>`:''}</tr>`;
+ const rcRow=c.rc?`<tr><td>صافي الأصول المحررة من القيود (إعادة التصنيف لتحقق قيد الاستخدام)</td><td></td><td class="n">${fm(c.rc)}</td><td class="n">${fm(-c.rc)}</td><td class="n">-</td><td class="n">-</td>${pr?'<td class="n">-</td>':''}</tr>`:'';
+ const ptot=c.pRev-c.pExp;
+ const act=hdr('قائمة الأنشطة للسنة المنتهية في 31 ديسمبر '+yr+'م')+`<table><tr><th>البيان</th><th>إيضاح</th><th class="n">غير مقيدة</th><th class="n">مقيدة</th><th class="n">أوقاف</th><th class="n">إجمالي ${yr}</th>${pr?`<th class="n">إجمالي ${yp}</th>`:''}</tr><tr class="hd"><td colspan=${pr?7:6}>الإيرادات والمكاسب</td></tr>${rv.map(ac).join('')}${rcRow}`
+ +tr('إجمالي الإيرادات والمكاسب',c.rev.U+c.rc,c.rev.R-c.rc,c.rev.E,c.pRev)+`<tr class="hd"><td colspan=${pr?7:6}>المصروفات والخسائر</td></tr>${xp.map(ac).join('')}`+tr('إجمالي المصروفات والخسائر',c.exp.U,c.exp.R,c.exp.E,c.pExp)
+ +tr('التغير في صافي الأصول',c.chg.U,c.chg.R,c.chg.E,ptot)+`</table></div>`;
+ const nar=(lab,o,cls)=>`<tr class="${cls||''}"><td>${lab}</td><td class="n">${fm(o.U,1)}</td><td class="n">${fm(o.R,1)}</td><td class="n">${fm(o.E,1)}</td><td class="n">${fm(o.U+o.R+o.E,1)}</td></tr>`;
+ const op=pr?c.naP:{U:0,R:0,E:0};
+ const na=hdr('قائمة التغير في صافي الأصول للسنة المنتهية في 31 ديسمبر '+yr+'م')+`<table><tr><th>البيان</th><th class="n">غير مقيدة</th><th class="n">مقيدة</th><th class="n">أوقاف</th><th class="n">الإجمالي</th></tr>`
+ +nar(pr?'الرصيد في 1 يناير '+yr+'م (حسب القوائم السابقة)':'الرصيد في بداية السنة',op)+nar(pr?'فروق وتسويات على الرصيد الافتتاحي (الدفاتر مقابل القوائم السابقة)':'أرصدة افتتاحية حسب الدفاتر',c.naD)+nar('التغير في صافي الأصول (قائمة الأنشطة)',c.chg)+nar('الرصيد في 31 ديسمبر '+yr+'م',c.naC,'tot')+`</table></div>`;
+ const F=c.F,fr=(lab,v)=>v?`<tr><td>${lab}</td><td class="n">${fm(v,1)}</td>${pr?'<td></td>':''}</tr>`:'';const ft=(lab,v,p)=>`<tr class="tot"><td>${lab}</td><td class="n">${fm(v,1)}</td>${pr?`<td class="n">${p==null?'':fm(p,1)}</td>`:''}</tr>`;
+ const pc=S.pcf;const pnet=(num(pc.op)||0)+(num(pc.inv)||0)+(num(pc.fin)||0),pc0=num(pc.cash0)||0;
+ const cf=hdr('قائمة التدفقات النقدية للسنة المنتهية في 31 ديسمبر '+yr+'م','المبالغ بالريال السعودي - الطريقة غير المباشرة')+`<table><tr><th>البيان</th><th class="n">${yr}</th>${pr?`<th class="n">${yp}</th>`:''}</tr><tr class="hd"><td colspan=${pr?3:2}>التدفقات النقدية من الأنشطة التشغيلية</td></tr>`
+ +fr('التغير في صافي الأصول',F.chg)+fr('فروق وتسويات على الأرصدة الافتتاحية',F.adj)+fr('إهلاك الأصول الثابتة',F.dep)+fr('إهلاك الأصول الاستثمارية',F.depi)+fr('إطفاء الأصول غير الملموسة',F.am)+fr('مخصص نهاية الخدمة',F.eosb)
+ +fr('الذمم المدينة',F.recv)+fr('مصاريف مدفوعة مقدماً',F.prepaid)+fr('المخزون',F.inv)+fr('مصاريف مستحقة',F.accr)+fr('دائنون وأرصدة دائنة أخرى',F.otherpay)+ft('صافي التدفقات النقدية من الأنشطة التشغيلية',F.op,pr?num(pc.op)||0:null)
+ +`<tr class="hd"><td colspan=${pr?3:2}>التدفقات النقدية من الأنشطة الاستثمارية</td></tr>`+fr('شراء وإضافات أصول ثابتة',F.ppe)+fr('إضافات أصول غير ملموسة',F.intang)+fr('إضافات أصول استثمارية',F.invprop)+fr('استثمارات طويلة الأجل',F.invest)+fr('إضافات أصول ثابتة وقفية',F.e_ppe)+fr('إضافات مشروعات تحت التنفيذ',F.e_cip)+ft('صافي التدفقات النقدية من الأنشطة الاستثمارية',F.ivs,pr?num(pc.inv)||0:null)
+ +`<tr class="hd"><td colspan=${pr?3:2}>التدفقات النقدية من الأنشطة التمويلية</td></tr>`+fr('قروض',F.fin)+ft('صافي التدفقات النقدية من الأنشطة التمويلية',F.fin,pr?num(pc.fin)||0:null)
+ +ft('التغير في النقدية خلال السنة',F.net,pr?pnet:null)+ft('النقدية وما في حكمها أول السنة',F.c0,pr?pc0:null)+ft('النقدية وما في حكمها آخر السنة',F.c1,pr?pc0+pnet:null)+`</table><p class="note">مسودة محسوبة من الفروق بين أرصدة السنتين. الإضافات تُقدَّر من فرق الرصيد مع الإهلاك وتحتاج مطابقتها مع بيان الأصول والتسويات الفعلية. النقدية تشمل النقدية الموقوفة.</p></div>`;
+ const nt=LN.filter(l=>N[l.id]).map(l=>{const gm={};c.accs[l.id].forEach(o=>{const k=norm(o.a.grp||o.a.name);const g=gm[k]=gm[k]||{n:0,v:0,l:o.a.grp||o.a.name};g.n++;g.v+=o.v});const rows=Object.values(gm).map(g=>`<tr><td>${E(g.l)}${g.n>1?' ('+g.n+' حسابات)':''}</td><td class="n">${fm(g.v,1)}</td></tr>`).join('');return`<h3>(${N[l.id]}) ${l.ar}</h3><table><tr><th>الحساب</th><th class="n">${yr}</th></tr>${rows}<tr class="tot"><td>الإجمالي</td><td class="n">${fm(c.cur[l.id],1)}</td></tr></table>${pr&&c.P(l.id)?`<p class="note">رصيد ${yp}: ${fm(c.P(l.id))}</p>`:''}`}).join('');
+ const org=`<h3>(1) التنظيم والعمليات</h3><p>اسم الجمعية: ${E(k.name)}<br>المركز الرئيسي: ${E(k.region)}<br>رقم التسجيل لدى المركز الوطني لتنمية القطاع غير الربحي: ${E(k.reg)}<br>السنة المالية: من 1 يناير ${yr}م إلى 31 ديسمبر ${yr}م</p><p class="note">أهداف الجمعية: تُستكمل من النظام الأساسي.</p>`;
+ const pol=NOTES.map(t=>{const hd=(t.length<60&&!/[.؛]$/.test(t)&&!/^\d/.test(t));return hd?`<h3>${E(t)}</h3>`:`<p style="white-space:pre-line">${E(t.replace(/جمعية البر[^،.\n]*/g,k.name||'الجمعية'))}</p>`}).join('');
+ const ev=`<h3>الأحداث اللاحقة</h3><p>حسب رأي الإدارة، لم تكن هناك أحداث لاحقة هامة منذ تاريخ القوائم المالية تتطلب الإفصاح أو التعديل.</p><h3>عام</h3><p>تم تقريب الأرقام الواردة في القوائم المالية إلى أقرب ريال سعودي.</p><h3>اعتماد القوائم المالية</h3><p>تم اعتماد القوائم المالية من قبل الإدارة بتاريخ ${E(k.appr||'.......')}.</p>`;
+ const notes=hdr('إيضاحات حول القوائم المالية للسنة المنتهية في 31 ديسمبر '+yr+'م')+org+pol+'<h3>تفاصيل بنود القوائم</h3>'+nt+ev+'</div>';
+ const status=Math.abs(c.diff)<1&&!c.unm.length?'<span class="ok">القوائم متوازنة</span>':`<span class="bad">تنبيه: ${c.unm.length?c.unm.length+' حساب غير مصنف. ':''}${Math.abs(c.diff)>=1?'فرق في التوازن '+fm(c.diff):''}</span>`;
+ return`<div class="card"><h2>مسودة القوائم المالية (نموذج الجمعيات - ${pr?'مع سنة سابقة':'سنة أولى'})</h2><p>${status}</p><button class="b" data-act="fsxls">تنزيل القوائم (إكسل)</button><button class="b s" data-act="print">طباعة / PDF</button>
+ <p class="note">المسودة تُبنى من الميزان والتصنيف. تقرير المراجع والغلاف والفهرس وأهداف الجمعية تُستكمل يدوياً. أرقام الإيضاحات تتبع البنود الموجودة فقط.</p></div><div id="fsarea">${bs+act+na+cf+notes}</div>`}
+function rChk(c){const ck=(ok,t,d)=>`<tr><td>${ok?'<span class="ok">✓</span>':'<span class="bad">✗</span>'}</td><td>${t}</td><td>${d||''}</td></tr>`;const k=S.client;
+ const rows=[ck(S.tb.length>0,'تم إدخال ميزان المراجعة',S.tb.filter(a=>!a.par).length+' حساب في '+groups().length+' حساب رئيسي'),ck(Math.abs(c.td-c.tc)<1,'الميزان متوازن (مدين = دائن)','فرق '+fm(c.td-c.tc)),ck(!c.unm.length,'كل الحسابات مصنفة في بنود القوائم',c.unm.map(a=>E(a.name)).join('، ')),
+ ck(Math.abs(c.diff)<1,'الأصول = الالتزامات + صافي الأصول','فرق '+fm(c.diff))];
+ if(k.mode==='prior'){rows.push(ck(Math.abs(c.pA-c.pL-c.pNA)<1,'القوائم السابقة متوازنة','فرق '+fm(c.pA-c.pL-c.pNA)));
+  ['U','R','E'].forEach(x=>rows.push(ck(Math.abs(c.naD[x])<1,'رصيد أول المدة (الدفاتر) = رصيد آخر القوائم السابقة: '+CLS[x],'فرق '+fm(c.naD[x]))))}
+ rows.push(ck(Math.abs(c.F.chk)<1,'التدفقات النقدية تطابق التغير في النقدية بالميزان','فرق '+fm(c.F.chk)));
+ const lg=S.gl.length;rows.push(ck(lg>0,'حركات دفتر الأستاذ',lg+' حركة'));
+ return`<div class="card"><h2>فحوصات</h2><table><tr><th></th><th>الفحص</th><th>التفصيل</th></tr>${rows.join('')}</table>
+ <h3>الأهمية النسبية (اختياري)</h3><label>الأهمية الكلية المعتمدة (ريال)</label><input class="num" data-pm value="${S.pm||''}" style="max-width:240px"><p class="note">تُستخدم كحد مقترح للبنود الكبيرة عند سحب العينات الجديدة.</p></div>`}
+function dl(name,blob){const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},500)}
+function xlsHtml(inner){return new Blob(['\ufeff<html dir="rtl"><head><meta charset="utf-8"><style>table{border-collapse:collapse}td,th{border:1px solid #999;padding:3px}</style></head><body>'+inner+'</body></html>'],{type:'application/vnd.ms-excel'})}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-act],[data-del],[data-tog]');if(!t)return;
+ if(t.dataset.tab){tab=t.dataset.tab;render();window.scrollTo(0,0);return}
+ if(t.dataset.tog!==undefined){S.open[t.dataset.tog]=!S.open[t.dataset.tog];render();return}
+ if(t.dataset.del){S.tb=S.tb.filter(a=>a.id!==t.dataset.del);delete S.map[t.dataset.del];save();render();return}
+ const a=t.dataset.act;if(t.tagName==='INPUT')return;
+ if(a==='tbadd'||a==='tbreplace'){const l=parseTB($('tbpaste').value);if(!l.length){alert('لم أجد أرصدة في النص الملصوق');return}addTB(l,a==='tbreplace');save();render()}
+ else if(a==='tbrow'){S.tb.push({id:nid(),code:'',name:'',dr:0,cr:0});save();render()}
+ else if(a==='automap'){S.tb.forEach(x=>{if(!(S.map[x.id]||{}).line){const s=suggest(x.name);if(s)S.map[x.id]={line:s,cls:L[s].cls}}});save();render()}
+ else if(a==='backup'){dl('audit-backup-'+(S.client.name||'client')+'.json',new Blob([JSON.stringify(S)],{type:'application/json'}))}
+ else if(a==='reset'){if(confirm('سيتم مسح كل بيانات العميل الحالي من هذا الجهاز. هل أخذت نسخة احتياطية؟')){S=blank();glDirty=true;save();ledSel='';tbMsg='';glMsg='';render()}}
+ else if(a==='print'){window.print()}
+ else if(a==='pbcxls'){dl('طلبات-العميل.xls',xlsHtml(readTable($('pbct'))))}
+ else if(a==='fsxls'){dl('القوائم-المالية-مسودة.xls',xlsHtml($('fsarea').innerHTML))}
+ else if(a==='draw'){if(!ledSel){ledMsg='ارفع دفتر الأستاذ أولاً.';render();return}const n=drawScope(ledSel);ledMsg=n?'تم سحب '+n+' عنصر من '+scopeName(ledSel):'لا توجد حركات في هذا النطاق.';save();render()}
+ else if(a==='drawall'){let k=0,tot=0;LN.forEach(l=>{if((resolveAll().byLine[l.id]||[]).length){const n=drawScope('L:'+l.id);if(n){k++;tot+=n}}});ledMsg='تم سحب عينات لـ '+k+' بند ('+tot+' عنصر).';save();render()}
+ else if(a==='samplexls'){if(!S.samples[ledSel]){alert('اسحب العينة أولاً');return}dl('عينة.xls',xlsHtml(sampleHtml(ledSel)))}
+ else if(a==='samplexlsall'){const ks=Object.keys(S.samples).filter(k=>/^[LG]:/.test(k)&&S.samples[k].items);if(!ks.length){alert('اسحب العينات أولاً');return}dl('كل-العينات.xls',xlsHtml(ks.map(sampleHtml).join('')))}
+ else if(a==='pick'){ledSel=t.dataset.key;render();document.getElementById('smt').scrollIntoView()}
+ else if(a==='gladd'){const l=parseGL($('glpaste').value);if(!l.length){glMsg='لم أجد حركات في النص.';render();return}S.gl.push(...l);glDirty=true;glMsg=glSummary(l);save();render()}
+ else if(a==='glmatch'){S.gl.forEach(e=>{if(!e.m){e.t='';e.gg=''}});glDirty=true;glMsg='تمت إعادة المطابقة.';save();render()}
+ else if(a==='glclear'){if(confirm('مسح كل حركات دفتر الأستاذ والعينات المسحوبة؟')){S.gl=[];S.samples={};glDirty=true;glMsg='';save();render()}}
+ else if(a==='ledadd'){if(!accSel){ledMsg='اختر الحساب في الميزان أولاً.';render();return}const l=parseGL($('ledpaste').value);if(!l.length){ledMsg='لم أجد حركات في النص.';render();return}setAcc(accSel,l);glMsg=glSummary(l);save();render()}
+ else if(a==='tbexp'){const gs=groups();const any=gs.some(g=>S.open[g.id]);gs.forEach(g=>S.open[g.id]=!any);render()}
+ else if(a==='rehier'){if(!confirm('سيعاد اكتشاف الإجماليات وتجميع الحسابات الرئيسية (تعديلاتك على أسماء المجموعات تُستبدل). متابعة؟'))return;detectHier(S.tb);const byId={};S.tb.forEach(x=>byId[x.id]=x);S.tb.forEach(x=>{if(x.par){delete S.map[x.id];return}if(!(S.map[x.id]||{}).line){let s=suggest(x.name),p=x,g=0;while(!s&&p.pid&&g++<20){p=byId[p.pid];if(p)s=suggest(p.name)}if(s)S.map[x.id]={line:s,cls:L[s].cls}}x.grp=groupFor(x,byId)});tbMsg='أعيد اكتشاف الإجماليات والتجميع.';save();render()}
+ else if(a==='pdfapply'){const t2=pdfApplyTotals(),k=Object.keys(t2.acc);if(!k.length){alert('لا توجد بنود معتمدة');return}k.forEach(id=>S.prior[id]=Math.round(t2.acc[id]*100)/100);priorMsg='تمت تعبئة '+k.length+' بند من ملف PDF. راجع الأرقام أدناه وقارنها بالملف الأصلي.';PDFST={busy:false,msg:'',pages:[],sel:{},col:{},map:{},val:{},done:false,mode:''};save();render();return}
+ else if(a==='pdfclear'){PDFST={busy:false,msg:'',pages:[],sel:{},col:{},map:{},val:{},done:false,mode:''};render();return}
+ else if(a==='priorapply'){const r=parsePrior($('priorpaste').value);const k=Object.keys(r.got);if(!k.length){priorMsg='لم أتعرف على بنود في النص.';render();return}k.forEach(id=>S.prior[id]=r.got[id]);priorMsg='تمت تعبئة '+k.length+' بند من القوائم. راجع الأرقام أدناه.'+(r.un.length?' لم يُتعرف على: '+r.un.slice(0,12).map(E).join('، ')+(r.un.length>12?' ...':''):'');save();render()}
+});
+function readTable(tb){let h='<table>';tb.querySelectorAll('tr').forEach(r=>{h+='<tr>';r.querySelectorAll('th,td').forEach(c=>{let v;const s=c.querySelector('select'),i=c.querySelector('input');if(s)v=s.value;else if(i)v=i.type==='checkbox'?(i.checked?'✓':''):i.value;else v=c.textContent;h+='<td'+(c.colSpan>1?' colspan='+c.colSpan:'')+'>'+E(v)+'</td>'});h+='</tr>'});return h+'</table>'}
+document.addEventListener('change',async e=>{const t=e.target,d=t.dataset;let r=false;
+ if(d.c!==undefined){S.client[d.c]=d.c==='year'?(+t.value||S.client.year):t.value;r=d.c==='mode'}
+ else if(d.reclass!==undefined){S.reclass=num(t.value)||0}
+ else if(d.tbf){const a=S.tb.find(x=>x.id===d.id);a[d.tbf]=(d.tbf==='dr'||d.tbf==='cr')?(num(t.value)||0):t.value;if(d.tbf==='name'&&!(S.map[a.id]||{}).line){const s=suggest(a.name);if(s)S.map[a.id]={line:s,cls:L[s].cls}}r=true}
+ else if(d.map){S.map[d.map]=S.map[d.map]||{};S.map[d.map].line=t.value;S.map[d.map].cls=t.value?L[t.value].cls:'';r=true}
+ else if(d.cls){S.map[d.cls].cls=t.value;r=true}
+ else if(d.prior){S.prior[d.prior]=num(t.value)||0;t.value=S.prior[d.prior]||''}
+ else if(d.pcf){S.pcf[d.pcf]=num(t.value)||0}
+ else if(d.pst){(S.pbc[d.pst]=S.pbc[d.pst]||{}).st=t.value}
+ else if(d.pnote){(S.pbc[d.pnote]=S.pbc[d.pnote]||{}).note=t.value}
+ else if(d.pm!==undefined){S.pm=num(t.value)||0}
+ else if(d.ledsel!==undefined){ledSel=t.value;ledMsg='';r=true}
+ else if(d.accsel!==undefined){accSel=t.value}
+ else if(d.gmap!==undefined){if(t.value==='__mix')return;const g=groups().find(x=>x.id===d.gmap);if(g){g.rows.forEach(a=>{S.map[a.id]={line:t.value,cls:t.value?L[t.value].cls:''}})}r=true}
+ else if(d.gcls!==undefined){if(t.value==='__mix')return;const g=groups().find(x=>x.id===d.gcls);if(g){g.rows.forEach(a=>{(S.map[a.id]=S.map[a.id]||{}).cls=t.value})}r=true}
+ else if(d.par!==undefined){const a=S.tb.find(x=>x.id===d.par);if(a&&t.checked){a.par=false;a.why='';const s=suggest(a.name);if(s&&!(S.map[a.id]||{}).line)S.map[a.id]={line:s,cls:L[s].cls};const by={};S.tb.forEach(x=>by[x.id]=x);a.grp=groupFor(a,by)}r=true}
+ else if(d.glfix!==undefined){if(t.value){const [aa,kk]=d.glfix.split('|');S.gl.forEach(e=>{if(!e.t&&!e.gg&&(e.a||'')===aa&&(e.k||'')===(kk||'')){e.t=t.value;e.m=1}});glDirty=true}r=true}
+ else if(d.spinc!==undefined){S.sp.inc=t.checked;r=true}
+ else if(d.sp){S.sp[d.sp]=(d.sp==='method')?t.value:(num(t.value)||0)}
+ else if(d.sck){const it=S.samples[ledSel].items[+d.i];it[d.sck]=d.sck==='note'?t.value:t.checked}
+ else if(d.act==='tbfile'||d.act==='ledfile'||d.act==='glfile'||d.act==='priorfile'){const f=t.files[0];if(!f)return;let text,pf;try{if(d.act==='priorfile'&&/\.xlsx$/i.test(f.name)){pf=await priorFromXlsx(await f.arrayBuffer());text=''}else text=/\.xlsx$/i.test(f.name)?await readXlsx(await f.arrayBuffer()):await f.text()}catch(x){alert('تعذرت قراءة الملف. إذا كان PDF ممسوحاً ضوئياً فلا يمكن قراءته، صدّره من نظام المحاسبة إلى إكسل. أو انسخ الجدول والصقه في المربع.');return}
+  if(d.act==='tbfile'){const l=parseTB(text);if(!l.length){alert('لم أجد أرصدة في الملف');return}addTB(l,false)}
+  else if(d.act==='glfile'){const l=parseGL(text);if(!l.length){glMsg='لم أجد حركات في الملف. تأكد من وجود عمودي مدين ودائن.';render();return}S.gl.push(...l);glDirty=true;glMsg=glSummary(l)}
+  else if(d.act==='priorfile'){const p=pf||parsePrior(text),k=Object.keys(p.got);if(!k.length){priorMsg='لم أتعرف على بنود في الملف.'}else{k.forEach(id=>S.prior[id]=p.got[id]);priorMsg='تمت تعبئة '+k.length+' بند من الملف'+(p.year?' (عمود سنة '+p.year+')':'')+'. راجع الأرقام أدناه.'+(p.un.length?' لم يُتعرف على: '+p.un.slice(0,12).map(E).join('، '):'')}}
+  else{if(!accSel){ledMsg='اختر الحساب في الميزان أولاً.';render();return}const l=parseGL(text);setAcc(accSel,l);glMsg=glSummary(l)}r=true}
+ else if(d.act==='priorpdf'){const f=t.files[0];t.value='';if(!f)return;PDFST={busy:true,msg:'جارٍ التحميل...',pages:[],sel:{},col:{},map:{},val:{},done:false,mode:''};render();
+  try{await ensurePdfLibs();const res=await PDFIMP.readPdf(f,st=>{PDFST.msg=st.stage==='load'?'تحميل محرك القراءة (مرة واحدة)...':st.stage==='prep'?'تحضير الصفحة '+st.page+' من '+st.total+'...':'قراءة الصفحة '+st.page+' من '+st.total+'...';render()},{base:''});
+   PDFST.busy=false;PDFST.pages=res.pages;PDFST.mode=res.pages.some(p=>p.mode==='ocr')?'ocr':'text';pdfAutoSel(res.pages);
+   const nn=res.pages.reduce((s,p)=>s+p.rows.filter(r=>r.vals.length).length,0);PDFST.msg=nn?'تمت قراءة '+res.numPages+' صفحة. راجع الجدول أدناه ثم اعتمد.':'لم أجد أرقاماً في الملف.';PDFST.err=!nn}
+  catch(x){PDFST.busy=false;PDFST.err=true;PDFST.msg='تعذرت قراءة الملف: '+(x&&x.message||x)}
+  r=true}
+ else if(d.pdfpg!==undefined){PDFST.sel[d.pdfpg]=t.checked;r=true}
+ else if(d.pdfcol!==undefined){PDFST.col[d.pdfcol]=+t.value;r=true}
+ else if(d.pdfmap!==undefined){PDFST.map[d.pdfmap]=t.value;r=true}
+ else if(d.pdfval!==undefined){PDFST.val[d.pdfval]=t.value;r=true}
+ else if(d.act==='restore'){const f=t.files[0];if(!f)return;try{S=Object.assign(blank(),JSON.parse(await f.text()));S.sp=Object.assign({n:10,key:0,seed:1,method:'rnd',inc:false},S.sp||{});S.open=S.open||{};S.gl=S.gl||[];glDirty=true;ensureGL();r=true}catch(x){alert('ملف غير صالح')}}
+ else return;
+ save();if(r)render();else $('nav').lastChild.textContent=saveMsg});
+render();
+</script></body></html>
